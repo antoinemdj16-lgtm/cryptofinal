@@ -1,0 +1,2493 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRYPTO TERMINAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<!-- Anti-flash : applique le thème AVANT le CSS pour éviter tout flash -->
+<script>(function(){var t=localStorage.getItem('ct_theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')})()</script>
+<script>(function(){var m=localStorage.getItem('ct_mode_v1');document.documentElement.setAttribute('data-mode',(m==='beginner'||m==='expert')?m:'standard')})()</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06090F;--s1:#0B1018;--s2:#101620;--s3:#161E2A;--s4:#1C2535;
+  --b:rgba(255,255,255,0.065);--bh:rgba(255,255,255,0.12);
+  --tp:#D9E2F0;--ts:#5A6F8A;--tm:#2E3D52;
+  --btc:#F7931A;--eth:#627EEA;--sol:#9945FF;--xrp:#23BAF5;
+  --bear:#F43F5E;--bull:#10B981;--warn:#F59E0B;
+  --bear-bg:rgba(244,63,94,.1);--bull-bg:rgba(16,185,129,.1);--warn-bg:rgba(245,158,11,.1);
+  --r:8px;--r-lg:12px;--mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;
+  /* Vars dynamiques pour Chart.js (lues via getComputedStyle) */
+  --chart-grid:rgba(255,255,255,0.04);--chart-tooltip-bg:#0B1018;--chart-border:rgba(255,255,255,0.1);
+}
+
+/* ══ THÈME CLAIR ══ */
+[data-theme="light"]{
+  --bg:#F0F4FB;--s1:#FFFFFF;--s2:#EEF1F8;--s3:#E4E8F2;--s4:#D5DDEA;
+  --b:rgba(0,0,0,0.08);--bh:rgba(0,0,0,0.18);
+  --tp:#0D1826;--ts:#5C7090;--tm:#8EA0B8;
+  /* Couleurs sémantiques assombries pour contraste WCAG sur fond clair */
+  --bear:#BE123C;--bull:#065F46;--warn:#B45309;
+  --bear-bg:rgba(190,18,60,.07);--bull-bg:rgba(6,95,70,.07);--warn-bg:rgba(180,83,9,.07);
+  --chart-grid:rgba(0,0,0,0.07);--chart-tooltip-bg:#FFFFFF;--chart-border:rgba(0,0,0,0.12);
+}
+
+/* Transition douce sur bascule thème (uniquement background + color) */
+body{transition:background-color .25s,color .2s}
+#top-bar,#tab-nav,#content,.card,.sum-card,.asset-dh,.chart-wrap,
+.ind-card,.exec-card,.simple-card,.regime-verdict,.opinion-card,
+.scen-card,.accumulate-box,.cc-btn,#refresh-btn,.tnav-btn,.sync-banner,
+.market-view,.cop-card,.engine-card,.mv-stat,.mv-block,.mode-btn,
+details.evidence>summary{
+  transition:background-color .25s,border-color .25s,color .15s;
+}
+
+/* Surcharges light pour les pills hardcodées en couleur */
+[data-theme="light"] .lv-res{background:rgba(190,18,60,.1);color:#BE123C}
+[data-theme="light"] .lv-sup{background:rgba(6,95,70,.1);color:#065F46}
+[data-theme="light"] .lv-cur{background:rgba(180,83,9,.1);color:#B45309}
+[data-theme="light"] .op-vn{background:rgba(190,18,60,.1);color:#BE123C}
+[data-theme="light"] .op-vp{background:rgba(6,95,70,.1);color:#065F46}
+[data-theme="light"] .op-vne{background:rgba(180,83,9,.1);color:#B45309}
+[data-theme="light"] .conf-pill.conf-low{background:rgba(190,18,60,.1);color:#BE123C}
+[data-theme="light"] .conf-pill.conf-medium{background:rgba(180,83,9,.1);color:#B45309}
+[data-theme="light"] .conf-pill.conf-high{background:rgba(6,95,70,.1);color:#065F46}
+
+/* ══ BOUTON THÈME ══ */
+#theme-btn{background:transparent;border:1px solid var(--b);color:var(--ts);width:32px;height:32px;border-radius:var(--r);font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;flex-shrink:0}
+#theme-btn:hover{background:var(--s3);border-color:var(--bh);color:var(--tp)}
+
+/* ══ SÉLECTEUR DEVISE ══ */
+.fx-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.fx-lbl{font-size:10px;color:var(--tm);font-family:var(--mono);letter-spacing:.04em}
+.fx-btn{background:var(--s2);border:1px solid var(--b);color:var(--ts);padding:3px 9px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.06em;cursor:pointer;transition:.15s}
+.fx-btn.active{background:var(--s4);border-color:var(--bh);color:var(--tp)}
+.fx-btn:hover:not(.active){background:var(--s3);color:var(--tp)}
+.adh-fx-note{font-size:10px;color:var(--tm);font-family:var(--mono);margin-top:3px}
+html,body{height:100%;background:var(--bg);color:var(--tp);font-family:var(--sans);font-size:14px;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--sans);font-size:14px}
+:focus-visible{outline:2px solid var(--warn);outline-offset:2px;border-radius:4px}
+.sum-card:focus-visible{outline-offset:-2px}
+
+/* ══ APP SHELL ══ */
+#app{display:grid;grid-template-rows:auto auto 1fr;height:100vh;overflow:hidden}
+
+/* ══ TOP BAR ══ */
+#top-bar{background:var(--s1);border-bottom:1px solid var(--b);padding:0 20px;display:flex;align-items:center;gap:20px;height:52px;flex-shrink:0;position:relative;z-index:10}
+.logo-mark{font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--ts);white-space:nowrap}
+.logo-mark span{color:var(--warn)}
+.ticker-strip{display:flex;gap:0;flex:1;overflow:hidden}
+.tick-item{display:flex;align-items:center;gap:8px;padding:0 14px;border-right:1px solid var(--b);height:52px;white-space:nowrap}
+.tick-sym{font-size:10px;font-weight:600;letter-spacing:.08em}
+.tick-p{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--tp)}
+.tick-c{font-family:var(--mono);font-size:11px}
+.top-meta{display:flex;align-items:center;gap:14px;margin-left:auto;flex-shrink:0}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.status-dot.live{background:var(--bull);box-shadow:0 0 6px var(--bull);animation:blink 2s infinite}
+.status-dot.error{background:var(--bear)}
+.status-dot.loading{background:var(--warn);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.refresh-txt{font-size:11px;color:var(--ts);font-family:var(--mono)}
+#refresh-btn{background:var(--s3);border:1px solid var(--b);color:var(--ts);padding:5px 12px;border-radius:var(--r);font-size:11px;font-weight:600;letter-spacing:.06em;transition:.15s}
+#refresh-btn:hover{background:var(--s4);color:var(--tp)}
+#refresh-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ══ SYNC BANNER (données indisponibles mais anciennes données conservées) ══ */
+.sync-banner{display:none;background:var(--warn-bg);border-bottom:1px solid rgba(245,158,11,.25);color:#FCD34D;font-size:12px;font-weight:500;padding:8px 20px;text-align:center;flex-shrink:0}
+.sync-banner.show{display:block}
+
+/* ══ TAB NAV ══ */
+#tab-nav{background:var(--s1);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:2px;padding:0 20px;height:44px;flex-shrink:0;overflow-x:auto}
+.tnav-btn{background:transparent;border:none;padding:0 16px;height:44px;font-size:12px;font-weight:600;color:var(--ts);letter-spacing:.04em;position:relative;white-space:nowrap;transition:color .15s}
+.tnav-btn::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:2px;border-radius:2px;background:transparent;transition:.15s}
+.tnav-btn:hover{color:var(--tp)}
+.tnav-btn.active{color:var(--tp)}
+.tnav-btn.active::after{background:var(--warn)}
+.tnav-btn.btc.active::after{background:var(--btc)}
+.tnav-btn.eth.active::after{background:var(--eth)}
+.tnav-btn.sol.active::after{background:var(--sol)}
+.tnav-btn.xrp.active::after{background:var(--xrp)}
+
+/* ══ CONTENT AREA ══ */
+#content{overflow-y:auto;padding:24px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ══ LOADING / ERROR ══ */
+#loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--ts)}
+.loading-spinner{width:32px;height:32px;border:2px solid var(--b);border-top-color:var(--warn);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;font-family:var(--mono)}
+#error-screen{display:none;padding:32px;max-width:500px;margin:40px auto}
+.error-card{background:var(--warn-bg);border:1px solid rgba(245,158,11,.25);border-radius:var(--r-lg);padding:24px}
+
+/* ══ OVERVIEW GRID ══ */
+.overview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+
+/* ══ ASSET SUMMARY CARD ══ */
+.sum-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:border-color .15s,transform .1s;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px}
+.sum-card.btc::before{background:var(--btc)}.sum-card.eth::before{background:var(--eth)}
+.sum-card.sol::before{background:var(--sol)}.sum-card.xrp::before{background:var(--xrp)}
+.sum-card:hover{border-color:var(--bh)}
+.sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.sc-sym{font-size:11px;font-weight:700;letter-spacing:.1em}
+.sc-signal{font-size:18px;line-height:1}
+.sc-price{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--tp);margin-bottom:3px}
+.sc-chg{font-family:var(--mono);font-size:11px;margin-bottom:12px}
+.sc-score-wrap{margin-bottom:8px}
+.sc-score-lbl{font-size:10px;color:var(--ts);margin-bottom:4px;display:flex;justify-content:space-between}
+.sc-score-bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.sc-score-fill{height:4px;border-radius:2px}
+.sc-rsi{display:flex;justify-content:space-between;font-size:11px;color:var(--ts);margin-bottom:10px}
+.sc-action{font-size:11px;font-weight:700;padding:4px 0;text-align:center;border-radius:var(--r);letter-spacing:.06em}
+
+/* ══ SECTION LAYOUT ══ */
+.section{margin-bottom:24px}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--b)}
+.sh-num{font-family:var(--mono);font-size:10px;color:var(--tm);background:var(--s2);padding:2px 7px;border-radius:4px;letter-spacing:.06em}
+.sh-title{font-size:15px;font-weight:600;color:var(--tp)}
+.sh-sub{font-size:12px;color:var(--ts);margin-left:auto}
+
+/* ══ CARDS ══ */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:16px}
+.card-sm{padding:12px 14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* ══ ASSET DETAIL HEADER ══ */
+.asset-dh{display:flex;align-items:center;gap:20px;margin-bottom:20px;background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:20px}
+.adh-logo{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.adh-price{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--tp)}
+.adh-changes{display:flex;gap:14px;margin-top:4px;font-family:var(--mono);font-size:12px}
+.adh-changes span{color:var(--ts)}
+.adh-meta{margin-left:auto;text-align:right}
+.adh-regime{font-size:20px;margin-bottom:4px}
+.adh-regime-txt{font-size:12px;color:var(--ts)}
+
+/* ══ CHART ══ */
+.chart-wrap{position:relative;background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:16px;margin-bottom:12px}
+.chart-controls{display:flex;gap:4px;margin-bottom:12px}
+.cc-btn{background:var(--s2);border:1px solid var(--b);color:var(--ts);padding:4px 12px;border-radius:6px;font-size:11px;font-weight:600;transition:.15s}
+.cc-btn.active{background:var(--s3);border-color:var(--bh);color:var(--tp)}
+.chart-canvas{width:100%!important;height:220px!important}
+
+/* ══ INDICATOR CARDS ══ */
+.ind-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:14px}
+.ind-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tm);margin-bottom:8px}
+.ind-val{font-family:var(--mono);font-size:20px;font-weight:600;margin-bottom:4px}
+.ind-note{font-size:11px;color:var(--ts)}
+
+/* ══ RSI VISUAL ══ */
+.rsi-bar-wrap{height:8px;background:linear-gradient(to right,var(--bull) 0%,var(--bull) 30%,var(--warn) 30%,var(--warn) 70%,var(--bear) 70%,var(--bear) 100%);border-radius:4px;position:relative;margin:6px 0}
+.rsi-cursor{position:absolute;top:-3px;width:14px;height:14px;border-radius:50%;background:var(--tp);border:2px solid var(--bg);transform:translateX(-50%)}
+
+/* ══ EMA TABLE ══ */
+.ema-table{width:100%;border-collapse:collapse}
+.ema-table th,.ema-table td{padding:8px 10px;font-size:12px;border-bottom:1px solid var(--b)}
+.ema-table th{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left}
+.ema-table td.mono{font-family:var(--mono);font-weight:500}
+.ema-row-bull td:first-child{border-left:2px solid var(--bull)}
+.ema-row-bear td:first-child{border-left:2px solid var(--bear)}
+
+/* ══ LEVELS ══ */
+.level-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b);font-size:12px}
+.level-row:last-child{border-bottom:none}
+.lv-pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:4px;white-space:nowrap;min-width:90px;text-align:center}
+.lv-res{background:rgba(244,63,94,.12);color:#FDA4AF}
+.lv-sup{background:rgba(16,185,129,.12);color:#6EE7B7}
+.lv-cur{background:rgba(245,158,11,.12);color:#FCD34D}
+.lv-price{font-family:var(--mono);font-weight:600;color:var(--tp);min-width:110px}
+.lv-note{color:var(--ts);flex:1}
+.lv-status{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--s3);color:var(--tm);white-space:nowrap}
+.lv-status.broken{background:rgba(244,63,94,.1);color:#FDA4AF}
+.lv-status.tested{background:rgba(245,158,11,.1);color:#FCD34D}
+
+/* ══ REGIME CARD ══ */
+.regime-verdict{display:flex;align-items:center;gap:12px;padding:16px;background:var(--s2);border-radius:var(--r);margin-bottom:14px}
+.rv-emoji{font-size:28px;line-height:1}
+.rv-main{font-size:15px;font-weight:700}
+.rv-sub{font-size:12px;color:var(--ts);margin-top:2px}
+.rv-conf{margin-left:auto;text-align:right}
+.rv-conf-val{font-family:var(--mono);font-size:18px;font-weight:600}
+.rv-conf-lbl{font-size:10px;color:var(--ts)}
+.signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.sig-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ts);padding:6px;border-radius:6px;background:var(--s2)}
+.sig-ic{font-size:13px;flex-shrink:0;margin-top:1px}
+
+/* ══ OPINION CARD ══ */
+.opinion-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:18px}
+.op-verdict-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--b)}
+.op-verdict-badge{font-size:11px;font-weight:700;padding:5px 14px;border-radius:var(--r);letter-spacing:.08em;text-transform:uppercase}
+.op-vn{background:var(--bear-bg);color:#FDA4AF}
+.op-vp{background:var(--bull-bg);color:#6EE7B7}
+.op-vne{background:var(--warn-bg);color:#FCD34D}
+.op-strengths{margin-bottom:12px}
+.op-weaknesses{margin-bottom:14px}
+.op-heading{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);margin-bottom:8px}
+.op-point{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ts);padding:4px 0;line-height:1.5}
+.op-point-ic{flex-shrink:0;font-size:14px;margin-top:1px}
+.accumulate-box{background:var(--s2);border-radius:var(--r);padding:12px 14px}
+.acc-q{font-size:12px;color:var(--ts);margin-bottom:4px;font-style:italic}
+.acc-a{font-size:14px;font-weight:600;color:var(--tp)}
+
+/* ══ SCENARIOS ══ */
+.scen-layout{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:start}
+.scen-chart-wrap{height:180px;position:relative}
+.scen-legend{display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:11px}
+.scen-leg{display:flex;align-items:center;gap:6px;color:var(--ts)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.scen-items{display:flex;flex-direction:column;gap:8px}
+.scen-card{background:var(--s2);border-radius:var(--r);padding:12px 14px;border-left:3px solid transparent}
+.scen-card.bear{border-left-color:var(--bear)}.scen-card.neu{border-left-color:var(--warn)}.scen-card.bull{border-left-color:var(--bull)}
+.scen-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.scen-name{font-size:12px;font-weight:600}
+.scen-pct{font-family:var(--mono);font-size:14px;font-weight:700}
+.scen-bar-bg{height:3px;background:var(--s3);border-radius:2px;margin-bottom:6px}
+.scen-bar-f{height:3px;border-radius:2px}
+.scen-desc{font-size:11px;color:var(--ts);line-height:1.5;margin-bottom:5px}
+.scen-triggers{font-size:10px;color:var(--tm)}
+.scen-triggers strong{color:var(--ts)}
+
+/* ══ SCORE ══ */
+.score-big-wrap{text-align:center;padding:16px}
+.score-big{font-family:var(--mono);font-size:52px;font-weight:700;line-height:1;margin-bottom:4px}
+.score-human{font-size:14px;font-weight:600;margin-bottom:10px}
+.daily-verdict{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:14px 18px;font-size:15px;font-weight:600;color:var(--tp);display:flex;align-items:center;gap:10px}
+.daily-verdict .dv-icon{font-size:18px;flex-shrink:0}
+.interp-line{font-size:13px;color:var(--tp);background:var(--s2);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.5}
+.score-disclaimer{font-size:11px;color:var(--ts);margin-top:10px;line-height:1.5;font-style:italic}
+.score-gauge{height:8px;border-radius:4px;background:linear-gradient(to right,var(--bear) 0%,var(--warn) 40%,var(--bull) 70%,#6EE7B7 100%);position:relative;margin:0 auto 8px;max-width:200px}
+.score-needle{position:absolute;top:-4px;width:16px;height:16px;border-radius:50%;background:var(--tp);border:2px solid var(--bg);transform:translateX(-50%)}
+.score-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--tm);max-width:200px;margin:0 auto}
+
+/* ══ SIMPLE SUMMARY ══ */
+.simple-card{background:var(--s2);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.simple-q{font-size:11px;font-weight:600;color:var(--ts);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.simple-a{font-size:13px;color:var(--tp);line-height:1.6}
+.action-banner{text-align:center;padding:16px;border-radius:var(--r-lg);margin:14px 0;border:1px solid}
+.ab-pre{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--ts);margin-bottom:6px}
+.ab-action{font-size:22px;font-weight:700}
+.ab-expl{font-size:12px;color:var(--ts);margin-top:6px}
+.action-buy{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)}
+.action-buy .ab-action{color:var(--bull)}
+.action-dca{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)}
+.action-dca .ab-action{color:var(--warn)}
+.action-wait{background:var(--s2);border-color:var(--b)}
+.action-wait .ab-action{color:var(--ts)}
+.action-avoid{background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)}
+.action-avoid .ab-action{color:var(--bear)}
+.risk-horizon{display:flex;justify-content:center;gap:20px;font-size:12px}
+.rh-item{display:flex;align-items:center;gap:6px}
+.rh-label{color:var(--ts)}
+.rh-val{font-weight:600}
+
+/* ══ EXECUTIVE SUMMARY ══ */
+.exec-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:20px;margin-bottom:12px}
+.exec-verdict{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:6px}
+.exec-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b);font-size:13px}
+.exec-row:last-child{border-bottom:none}
+.exec-lbl{color:var(--ts)}
+.exec-val{font-weight:600;color:var(--tp)}
+.exec-action{text-align:center;padding:20px;background:var(--s2);border-radius:var(--r);margin:16px 0}
+.exec-action-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--ts);margin-bottom:8px}
+.exec-action-val{font-size:28px;font-weight:700;margin-bottom:8px}
+.exec-one{font-style:italic;font-size:14px;color:var(--ts);line-height:1.5;max-width:500px;margin:0 auto}
+
+/* ══ HISTORY MINI ══ */
+.hist-table{width:100%;border-collapse:collapse}
+.hist-table th,.hist-table td{padding:7px 10px;font-size:11px;border-bottom:1px solid var(--b);text-align:left}
+.hist-table th{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tm)}
+.hist-table td.mono{font-family:var(--mono)}
+
+/* ══ MISC ══ */
+.tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--s3);color:var(--ts)}
+.neg{color:var(--bear)}.pos{color:var(--bull)}.neu{color:var(--warn)}
+.muted{color:var(--ts)}
+.fw6{font-weight:600}
+.mb8{margin-bottom:8px}
+.mt8{margin-top:8px}
+.sep{color:var(--tm);padding:0 4px}
+.num{font-family:var(--mono)}
+.row-center{display:flex;align-items:center;gap:8px}
+.ml-auto{margin-left:auto}
+.text-right{text-align:right}
+
+/* ══ NIVEAU 1 — VUE MARCHÉ (copilote) ══ */
+.market-view{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:22px;margin-bottom:20px}
+.mv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.mv-state-wrap{display:flex;align-items:center;gap:12px}
+.mv-state-emoji{font-size:34px;line-height:1}
+.mv-state-eyebrow{font-size:10px;font-weight:600;color:var(--ts);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.mv-state-name{font-size:23px;font-weight:700;color:var(--tp)}
+.mv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.mv-stat{background:var(--s2);border-radius:var(--r);padding:11px 12px;text-align:center}
+.mv-stat-lbl{font-size:10px;color:var(--ts);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.mv-stat-val{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1}
+.mv-stat-sub{font-size:10px;color:var(--tm);margin-top:3px}
+.mv-grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mv-block{background:var(--s2);border-radius:var(--r);padding:14px 16px}
+.mv-block-title{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ts);margin-bottom:8px}
+.mv-inaction-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:4px;background:var(--s3);color:var(--ts);margin-bottom:8px;text-transform:uppercase}
+.mv-action-item{display:flex;gap:8px;font-size:13px;color:var(--tp);padding:2px 0;line-height:1.55}
+.mv-action-arrow{color:var(--warn);flex-shrink:0}
+.mv-why{font-size:12px;color:var(--ts);margin-top:8px;line-height:1.5}
+.mv-change-text{font-size:13px;color:var(--tp);line-height:1.6}
+
+/* ══ SÉLECTEUR DE MODE (pédagogie) ══ */
+.mode-wrap{display:flex;align-items:center;gap:3px;background:var(--s2);border-radius:var(--r);padding:3px;flex-shrink:0}
+.mode-btn{background:transparent;border:none;color:var(--ts);padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.01em;transition:.15s;white-space:nowrap}
+.mode-btn.active{background:var(--s4);color:var(--tp)}
+.mode-btn:hover:not(.active){color:var(--tp)}
+
+/* ══ PASTILLE DE CONFIANCE (réutilisée partout) ══ */
+.conf-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:var(--r);white-space:nowrap}
+.conf-pill.conf-low{background:var(--bear-bg);color:#FDA4AF}
+.conf-pill.conf-medium{background:var(--warn-bg);color:#FCD34D}
+.conf-pill.conf-high{background:var(--bull-bg);color:#6EE7B7}
+
+/* ══ NIVEAU 2 — CARTES COPILOTE PAR ACTIF ══ */
+.cop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.cop-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.cop-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.cop-card.btc::before{background:var(--btc)}.cop-card.eth::before{background:var(--eth)}
+.cop-card.sol::before{background:var(--sol)}.cop-card.xrp::before{background:var(--xrp)}
+.cop-card:hover{border-color:var(--bh)}
+.cop-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:2px}
+.cop-sym{font-size:13px;font-weight:700;letter-spacing:.05em}
+.cop-role{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tm);margin-top:2px}
+.cop-price-wrap{text-align:right;flex-shrink:0}
+.cop-price{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--tp)}
+.cop-chg{font-family:var(--mono);font-size:11px}
+.cop-summary{font-size:13px;color:var(--tp);line-height:1.55;margin:10px 0}
+.cop-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.cop-row{display:flex;align-items:flex-start;gap:7px;font-size:11.5px;color:var(--ts);line-height:1.45}
+.cop-row-ic{flex-shrink:0;font-size:11px;margin-top:2px}
+.cop-row b{color:var(--tp);font-weight:600}
+.cop-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--b)}
+.cop-chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;letter-spacing:.03em}
+.cop-link{font-size:11px;color:var(--ts);font-weight:600;flex-shrink:0}
+.cop-card:hover .cop-link{color:var(--tp)}
+
+/* ══ MOTEURS OBLIGATOIRES (onglet détaillé par actif) ══ */
+.engine-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r-lg);padding:18px}
+.engine-q{font-size:13px;font-weight:600;color:var(--tp);margin-bottom:14px;font-style:italic}
+.contra-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.contra-col-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.contra-col-title.pos{color:var(--bull)}.contra-col-title.neg{color:var(--bear)}
+.contra-item{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--ts);padding:4px 0;line-height:1.5}
+.contra-conclusion{background:var(--s2);border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--tp);font-weight:500}
+.invalid-list{display:flex;flex-direction:column;gap:8px}
+.invalid-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ts);line-height:1.5;padding:9px 10px;background:var(--s2);border-radius:var(--r)}
+.invalid-ic{flex-shrink:0;color:var(--warn)}
+.change-text{font-size:13px;color:var(--tp);line-height:1.6}
+.conf-breakdown{margin-top:14px;padding-top:14px;border-top:1px solid var(--b)}
+.conf-factor-row{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ts);padding:4px 0}
+.conf-factor-row b{color:var(--tp);font-family:var(--mono)}
+
+/* ══ PREUVES REPLIABLES (Niveau 3) ══ */
+details.evidence{margin-top:4px}
+details.evidence>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:13px 16px;background:var(--s2);border-radius:var(--r-lg);font-size:12px;font-weight:600;color:var(--ts);letter-spacing:.02em;user-select:none}
+details.evidence>summary::-webkit-details-marker{display:none}
+details.evidence>summary::before{content:'▸';color:var(--tm);transition:transform .15s;display:inline-block}
+details.evidence[open]>summary::before{transform:rotate(90deg)}
+details.evidence>summary:hover{color:var(--tp)}
+details.evidence>summary:hover::before{color:var(--ts)}
+.evidence-body{padding-top:16px}
+
+/* ══ RÔLE DE L'ACTIF (en-tête onglet détaillé) ══ */
+.role-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--ts);background:var(--s2);padding:4px 10px;border-radius:var(--r);margin-top:8px}
+.role-tag b{color:var(--tp);font-weight:600}
+
+/* ══ MODES PÉDAGOGIQUES — même moteur, affichage différent ══ */
+/* Débutant : on masque le jargon et les preuves détaillées, on garde le résumé */
+[data-mode="beginner"] details.evidence{display:none}
+[data-mode="beginner"] .role-tag{display:none}
+/* Expert : informations supplémentaires (composition détaillée de la confiance) */
+.exp-only{display:none}
+[data-mode="expert"] .exp-only{display:block}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px){
+  .overview-grid,.grid-4{grid-template-columns:1fr 1fr}
+  .scen-layout{grid-template-columns:1fr}
+  .ticker-strip .tick-item:nth-child(n+3){display:none}
+  .cop-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .overview-grid,.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}
+  .signal-grid{grid-template-columns:1fr}
+  .mv-stats,.mv-grid-bottom,.contra-grid{grid-template-columns:1fr}
+  .mode-btn{padding:6px 8px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top-bar">
+    <div class="logo-mark">CRYPTO<span>TERMINAL</span></div>
+    <div class="ticker-strip" id="ticker-strip"></div>
+    <div class="top-meta">
+      <div class="status-dot loading" id="status-dot" role="status" aria-label="Statut de synchronisation"></div>
+      <span class="refresh-txt" id="refresh-txt" aria-live="polite">Chargement…</span>
+      <span class="refresh-txt" id="last-sync-txt"></span>
+      <!-- Sélecteur devise -->
+      <div class="fx-wrap" role="group" aria-label="Sélection de devise">
+        <span class="fx-lbl">🌍</span>
+        <button class="fx-btn" data-cur="EUR" onclick="FX.toggle('EUR')" aria-label="Afficher en euros">EUR</button>
+        <button class="fx-btn active" data-cur="USD" onclick="FX.toggle('USD')" aria-label="Afficher en dollars">USD</button>
+      </div>
+      <!-- Bascule thème -->
+      <button id="theme-btn" onclick="THEME.toggle()" aria-label="Basculer le thème clair/sombre" title="Thème clair / sombre">🌙</button>
+      <button id="refresh-btn" onclick="APP.refresh()">↻ MAJ</button>
+    </div>
+  </header>
+
+  <nav id="tab-nav" role="tablist" aria-label="Navigation des sections">
+    <button class="tnav-btn active" data-tab="overview" role="tab" aria-selected="true" aria-controls="tab-overview" id="tabbtn-overview" tabindex="0" onclick="APP.switchTab('overview')">Vue d'ensemble</button>
+    <button class="tnav-btn btc" data-tab="btc" role="tab" aria-selected="false" aria-controls="tab-btc" id="tabbtn-btc" tabindex="-1" onclick="APP.switchTab('btc')">₿ Bitcoin</button>
+    <button class="tnav-btn eth" data-tab="eth" role="tab" aria-selected="false" aria-controls="tab-eth" id="tabbtn-eth" tabindex="-1" onclick="APP.switchTab('eth')">Ξ Ethereum</button>
+    <button class="tnav-btn sol" data-tab="sol" role="tab" aria-selected="false" aria-controls="tab-sol" id="tabbtn-sol" tabindex="-1" onclick="APP.switchTab('sol')">◎ Solana</button>
+    <button class="tnav-btn xrp" data-tab="xrp" role="tab" aria-selected="false" aria-controls="tab-xrp" id="tabbtn-xrp" tabindex="-1" onclick="APP.switchTab('xrp')">✕ XRP</button>
+    <button class="tnav-btn" data-tab="exec" role="tab" aria-selected="false" aria-controls="tab-exec" id="tabbtn-exec" tabindex="-1" onclick="APP.switchTab('exec')">Résumé exécutif</button>
+    <button class="tnav-btn" data-tab="history" role="tab" aria-selected="false" aria-controls="tab-history" id="tabbtn-history" tabindex="-1" onclick="APP.switchTab('history')">Historique</button>
+  </nav>
+
+  <div id="sync-banner" class="sync-banner" role="status" aria-live="polite"></div>
+
+  <main id="content">
+    <div id="loading-screen">
+      <div class="loading-spinner"></div>
+      <div class="loading-txt">Récupération des données marché…</div>
+    </div>
+    <div id="error-screen">
+      <div class="error-card">
+        <div style="font-size:18px;font-weight:700;color:var(--warn);margin-bottom:8px">Données temporairement indisponibles</div>
+        <div id="error-msg" style="font-size:13px;color:var(--ts);line-height:1.6"></div>
+      </div>
+    </div>
+    <div id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-overview" tabindex="0"></div>
+    <div id="tab-btc" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-btc" tabindex="0"></div>
+    <div id="tab-eth" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-eth" tabindex="0"></div>
+    <div id="tab-sol" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-sol" tabindex="0"></div>
+    <div id="tab-xrp" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-xrp" tabindex="0"></div>
+    <div id="tab-exec" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-exec" tabindex="0"></div>
+    <div id="tab-history" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-history" tabindex="0"></div>
+  </main>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════
+//  THEME — Mode Jour / Nuit
+// ═══════════════════════════════════════════════════
+const THEME = {
+  _KEY: 'ct_theme',
+
+  // Appelé après DOMContentLoaded — le data-theme est déjà appliqué par le
+  // script anti-flash en tête de page. On se contente d'initialiser le bouton
+  // et de détecter la préférence système si aucun choix n'est mémorisé.
+  init(){
+    if(!localStorage.getItem(this._KEY)){
+      // Premier lancement : suivre la préférence système
+      const preferLight=window.matchMedia('(prefers-color-scheme: light)').matches;
+      this._apply(preferLight?'light':'dark');
+    }
+    this._updateBtn();
+    // Écouter les changements système (ex. passage auto nuit/jour de l'OS)
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',e=>{
+      if(!localStorage.getItem(this._KEY)) this._apply(e.matches?'light':'dark');
+    });
+  },
+
+  current(){return document.documentElement.getAttribute('data-theme')||'dark'},
+
+  toggle(){
+    const next=this.current()==='dark'?'light':'dark';
+    this._apply(next);
+    // CSS vars changent instantanément → uniquement rechargement des charts
+    // de l'onglet visible (Chart.js est canvas-based, insensible aux CSS vars)
+    const tab=APP._currentTab;
+    if(['btc','eth','sol','xrp'].includes(tab)){
+      const coin=C.coins.find(c=>c.cls===tab);
+      const d=APP._state[coin?.id];
+      if(coin&&d) R.assetTab(coin,d,APP._state);
+    }
+  },
+
+  _apply(theme){
+    document.documentElement.setAttribute('data-theme',theme);
+    localStorage.setItem(this._KEY,theme);
+    this._updateBtn();
+  },
+
+  _updateBtn(){
+    const btn=document.getElementById('theme-btn');
+    if(btn) btn.textContent=this.current()==='dark'?'☀️':'🌙';
+    if(btn) btn.setAttribute('aria-label',this.current()==='dark'?'Passer en mode clair':'Passer en mode sombre');
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  MODE — Pédagogie (Débutant / Standard / Expert)
+//  Même moteur d'analyse (COPILOT) pour les 3 modes — seul l'affichage
+//  change : quantité de jargon, niveau de détail, ouverture par défaut des
+//  preuves repliables. Persisté en localStorage, comme le thème.
+// ═══════════════════════════════════════════════════
+const MODE = {
+  _KEY:'ct_mode_v1',
+  VALID:['beginner','standard','expert'],
+
+  current(){
+    const m=document.documentElement.getAttribute('data-mode');
+    return this.VALID.includes(m)?m:'standard';
+  },
+
+  init(){
+    this._updateBtns();
+  },
+
+  set(mode){
+    if(!this.VALID.includes(mode))return;
+    document.documentElement.setAttribute('data-mode',mode);
+    try{localStorage.setItem(this._KEY,mode)}catch{}
+    // Le contenu textuel (pas seulement le CSS) dépend du mode → re-rendu
+    // complet ; les boutons reflètent l'état actif via le template lui-même.
+    if(Object.keys(APP._state).length) APP.rerender();
+    else this._updateBtns();
+  },
+
+  _updateBtns(){
+    const cur=this.current();
+    document.querySelectorAll('.mode-btn').forEach(b=>{
+      b.classList.toggle('active',b.dataset.mode===cur);
+    });
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════
+const C = {
+  coins:[
+    {id:'bitcoin',   sym:'BTC', name:'Bitcoin',  cls:'btc', color:'#F7931A', short:'₿', hasOpinion:false, paprikaId:'btc-bitcoin',
+      role:'Régime du marché', roleQ:'Le marché est-il sain ?', wRange:[30,60]},
+    {id:'ethereum',  sym:'ETH', name:'Ethereum', cls:'eth', color:'#627EEA', short:'Ξ', hasOpinion:true, paprikaId:'eth-ethereum',
+      role:'Qualité du capital', roleQ:'Les flux semblent-ils sérieux ?', wRange:[10,35]},
+    {id:'solana',    sym:'SOL', name:'Solana',   cls:'sol', color:'#9945FF', short:'◎', hasOpinion:true, paprikaId:'sol-solana',
+      role:'Accélération', roleQ:'Y a-t-il une recherche de rendement ?', wRange:[5,25]},
+    {id:'ripple',    sym:'XRP', name:'XRP',      cls:'xrp', color:'#23BAF5', short:'✕', hasOpinion:true, paprikaId:'xrp-xrp',
+      role:'Rotation', roleQ:'Y a-t-il un mouvement inhabituel ?', wRange:[0,15]}
+  ],
+  REFRESH_MS:    300000,
+  MIN_CACHE_MS:  60000,            // cache : 60s minimum avant tout nouvel appel réseau
+  DEBOUNCE_MS:   2500,             // anti double-clic sur le bouton MAJ
+  RETRY_DELAYS:  [2000,5000],      // tentative1 → attendre 2s → tentative2 → attendre 5s → tentative3
+  CACHE_KEY:     'ct_cache_v3',
+  HISTORY_KEY:   'ct_hist_v3',
+  STATUS_KEY:    'ct_status_v1',
+  MAX_HIST_DAYS: 90,
+  API_BASE:      'https://api.coingecko.com/api/v3',
+  FALLBACK_BASE: 'https://api.coinpaprika.com/v1'
+};
+
+function sleep(ms){return new Promise(res=>setTimeout(res,ms))}
+
+// Retry générique : tentative 1 (immédiate) → échec → attendre 2s → tentative 2
+// → échec → attendre 5s → tentative 3 → échec → on relance l'erreur (le caller
+// gère alors le repli vers la source de secours / le cache).
+async function withRetry(fn){
+  let lastErr;
+  for(let i=0;i<=C.RETRY_DELAYS.length;i++){
+    try{ return await fn(i+1); }
+    catch(e){
+      lastErr=e;
+      if(i<C.RETRY_DELAYS.length) await sleep(C.RETRY_DELAYS[i]);
+    }
+  }
+  throw lastErr;
+}
+
+// ═══════════════════════════════════════════════════
+//  FORMATTERS
+// ═══════════════════════════════════════════════════
+const FMT = {
+  // Les fonctions price() et vol() délèguent à FX.convert() — toute la logique
+  // de conversion est dans FX. USD reste la valeur stockée, la conversion
+  // n'a lieu qu'à l'affichage.
+  price(v){
+    if(!v&&v!==0)return'N/A';
+    const c=FX.convert(v), s=FX.symbol;
+    if(v>=1000)return s+c.toLocaleString('fr-FR',{maximumFractionDigits:0});
+    if(v>=1)return s+c.toFixed(3);
+    return s+c.toFixed(5);
+  },
+  pct(v){if(v==null)return'N/A';const s=v>=0?'+':'';return s+v.toFixed(2)+'%'},
+  vol(v){
+    if(!v)return'N/A';
+    const c=FX.convert(v), s=FX.symbol;
+    if(v>=1e9)return s+(c/1e9).toFixed(2)+'Mrd';
+    if(v>=1e6)return s+(c/1e6).toFixed(0)+'M';
+    return s+c.toFixed(0);
+  },
+  num(v,d=2){if(v==null)return'N/A';return typeof v==='number'?v.toFixed(d):'N/A'},
+  date(ts){const d=new Date(ts);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})},
+  timeAgo(ts){const m=Math.round((Date.now()-ts)/60000);if(m<1)return'à l\'instant';if(m<60)return`${m}min`;return`${Math.round(m/60)}h`}
+};
+
+// ═══════════════════════════════════════════════════
+//  FX — Conversion EUR / USD
+//  Architecture : USD = source de vérité. Conversion uniquement au moment
+//  du rendu via FX.convert(). FMT.price() et FMT.vol() délèguent à FX.
+// ═══════════════════════════════════════════════════
+const FX = {
+  _rate:      0.92,      // EUR par USD (fallback prudent)
+  _currency:  'USD',
+  _lastFetch: 0,
+  _KEY_RATE:  'ct_fx_rate_v1',
+  _KEY_CUR:   'ct_fx_cur_v1',
+  _TTL:       3600000,   // 1h en ms
+
+  get symbol(){ return this._currency==='EUR'?'€':'$' },
+  get isEur(){  return this._currency==='EUR' },
+
+  // Convertit une valeur USD → devise courante (no-op si USD)
+  convert(usd){
+    if(usd==null||usd===undefined) return usd;
+    return this.isEur ? usd*this._rate : usd;
+  },
+
+  // Minutes depuis le dernier fetch réussi (pour note UI)
+  minutesAgo(){
+    if(!this._lastFetch) return null;
+    const m=Math.round((Date.now()-this._lastFetch)/60000);
+    return m<1?'<1':String(m);
+  },
+
+  // ── Fetch du taux EUR/USD via API publique gratuite (sans clé) ──
+  async fetchRate(){
+    try{
+      const r=await fetch('https://open.er-api.com/v6/latest/USD',{signal:AbortSignal.timeout?AbortSignal.timeout(8000):undefined});
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const json=await r.json();
+      const rate=json?.rates?.EUR;
+      if(!rate||typeof rate!=='number') throw new Error('Taux EUR absent de la réponse');
+      this._rate=rate;
+      this._lastFetch=Date.now();
+      try{localStorage.setItem(this._KEY_RATE,JSON.stringify({rate,ts:this._lastFetch}))}catch{}
+      console.log(`FX: taux EUR/USD mis à jour → ${rate.toFixed(4)}`);
+    }catch(e){
+      console.warn('FX.fetchRate échec (fallback sur cache ou 0.92) :',e.message);
+      // Repli 1 : dernier taux connu en cache
+      try{
+        const c=JSON.parse(localStorage.getItem(this._KEY_RATE));
+        if(c?.rate&&typeof c.rate==='number'){
+          this._rate=c.rate;
+          this._lastFetch=c.ts||0;
+          console.warn(`FX: fallback taux cache ${c.rate.toFixed(4)} (${new Date(c.ts).toLocaleTimeString()})`);
+          return;
+        }
+      }catch{}
+      // Repli 2 : valeur par défaut (0.92) — déjà définie dans _rate
+    }
+  },
+
+  // ── Initialisation (appelée dans APP.init) ──
+  async init(){
+    // Charger préférence devise
+    this._currency=localStorage.getItem(this._KEY_CUR)||'USD';
+    // Charger taux mis en cache
+    try{
+      const c=JSON.parse(localStorage.getItem(this._KEY_RATE));
+      if(c?.rate&&typeof c.rate==='number'){this._rate=c.rate;this._lastFetch=c.ts||0}
+    }catch{}
+    // Fetch frais si mode EUR et cache périmé (> 1h)
+    if(this.isEur&&Date.now()-this._lastFetch>this._TTL){
+      await this.fetchRate();
+    }
+    this._updateUI();
+  },
+
+  // ── Bascule devise (appelée par les boutons) ──
+  async toggle(cur){
+    if(this._currency===cur) return;
+    this._currency=cur;
+    localStorage.setItem(this._KEY_CUR,cur);
+    // Si passage en EUR avec cache périmé → fetch avant re-rendu
+    if(this.isEur&&Date.now()-this._lastFetch>this._TTL){
+      await this.fetchRate();
+    }
+    this._updateUI();
+    if(Object.keys(APP._state).length) APP.rerender();
+  },
+
+  _updateUI(){
+    document.querySelectorAll('.fx-btn').forEach(b=>{
+      b.classList.toggle('active',b.dataset.cur===this._currency);
+    });
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  HISTORY (localStorage)
+// ═══════════════════════════════════════════════════
+const HISTORY = {
+  load(){try{return JSON.parse(localStorage.getItem(C.HISTORY_KEY))||[]}catch{return[]}},
+  save(entries){try{localStorage.setItem(C.HISTORY_KEY,JSON.stringify(entries))}catch(e){console.warn('HISTORY.save a échoué (quota/stockage indisponible) :',e)}},
+  snapshot(state){
+    const entries=this.load();
+    const today=new Date().toISOString().slice(0,10);
+    // Remove today if already exists
+    const filtered=entries.filter(e=>e.date!==today);
+    const snap={date:today,ts:Date.now(),coins:{}};
+    C.coins.forEach(coin=>{
+      const d=state[coin.id];if(!d)return;
+      const cp=d.copilot,ts=cp?.todaySnap;
+      snap.coins[coin.sym]={
+        price:d.price,rsi:d.analysis?.rsi,score:d.analysis?.score,regime:d.analysis?.regime?.trend,action:d.analysis?.action,
+        // Champs additionnels pour le moteur de changement (comparaison au
+        // prochain chargement) — absents sur les anciens historiques, lus
+        // avec garde-fous côté COPILOT.change().
+        confidence:ts?.confidence,rsiBucket:ts?.rsiBucket,macdBullish:ts?.macdBullish,structure:ts?.structure
+      };
+    });
+    filtered.push(snap);
+    // Keep max days
+    if(filtered.length>C.MAX_HIST_DAYS)filtered.splice(0,filtered.length-C.MAX_HIST_DAYS);
+    this.save(filtered);
+    return filtered;
+  },
+  // Dernière entrée antérieure à aujourd'hui (= "hier" au sens du moteur de
+  // changement — en pratique la dernière session différente d'aujourd'hui).
+  previous(entries){
+    if(!entries||!entries.length)return null;
+    const today=new Date().toISOString().slice(0,10);
+    const past=entries.filter(e=>e.date!==today).sort((a,b)=>b.ts-a.ts);
+    return past[0]||null;
+  },
+  // Cache brut, indépendant de tout TTL : permet de toujours retrouver les
+  // dernières données connues, même très anciennes, pour ne jamais laisser
+  // le tableau de bord vide en cas de panne API prolongée.
+  getCacheRaw(){try{const c=localStorage.getItem(C.CACHE_KEY);return c?JSON.parse(c):null}catch{return null}},
+  // true si un cache existe et a moins de maxAgeMs
+  isFresh(maxAgeMs){const c=this.getCacheRaw();return!!c&&(Date.now()-c.ts<maxAgeMs)},
+  // Cache filtré par âge ; maxAgeMs=null/undefined → ignore le TTL (cache "de secours")
+  getCached(maxAgeMs){const c=this.getCacheRaw();if(!c)return null;if(maxAgeMs!=null&&Date.now()-c.ts>maxAgeMs)return null;return c},
+  setCache(data){try{localStorage.setItem(C.CACHE_KEY,JSON.stringify({ts:Date.now(),data}))}catch(e){console.warn('HISTORY.setCache a échoué (quota/stockage indisponible) :',e)}}
+};
+
+// ═══════════════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════════════
+const API = {
+  async get(path){
+    const r=await fetch(C.API_BASE+path,{headers:{'Accept':'application/json'}});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  },
+  async getPaprika(path){
+    const r=await fetch(C.FALLBACK_BASE+path,{headers:{'Accept':'application/json'}});
+    if(!r.ok)throw new Error(`Paprika HTTP ${r.status}`);
+    return r.json();
+  },
+  async markets(){
+    return this.get('/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,ripple&sparkline=true&price_change_percentage=7d,30d&order=market_cap_desc&per_page=4');
+  },
+  async history(id,days=200){
+    return this.get(`/coins/${id}/market_chart?vs_currency=usd&days=${days}&interval=daily`);
+  },
+  async global(){
+    return this.get('/global');
+  },
+
+  // ── Source primaire : CoinGecko, avec retry intégré (1+2 relances) ──
+  async fetchAllCoinGecko(){
+    return withRetry(async()=>{
+      const [markets,globalData,...histories]=await Promise.all([
+        this.markets(),
+        this.global(),
+        ...C.coins.map(c=>this.history(c.id))
+      ]);
+      const data={markets,global:globalData,histories:{},source:'coingecko'};
+      C.coins.forEach((c,i)=>{data.histories[c.id]=histories[i]});
+      return data;
+    });
+  },
+
+  // ── Source de secours : CoinPaprika (1 seul appel groupé pour les 4 actifs) ──
+  // Ne fournit que le marché en direct (prix, %, volume, dominance) ; l'historique
+  // nécessaire aux indicateurs techniques est repris du dernier jeu de données
+  // CoinGecko connu, pour continuer à afficher RSI/MACD/EMA/structure cohérents.
+  async fetchAllPaprika(lastHistories){
+    const [tickers,globalData]=await Promise.all([
+      this.getPaprika('/tickers?quotes=USD'),
+      this.getPaprika('/global')
+    ]);
+    const markets=C.coins.map(c=>{
+      const t=Array.isArray(tickers)?tickers.find(x=>x.id===c.paprikaId):null;
+      const q=t&&t.quotes&&t.quotes.USD;
+      if(!q)return null;
+      return{
+        id:c.id,current_price:q.price,
+        price_change_percentage_24h:q.percent_change_24h,
+        price_change_percentage_7d_in_currency:q.percent_change_7d,
+        price_change_percentage_30d_in_currency:q.percent_change_30d,
+        total_volume:q.volume_24h,market_cap:q.market_cap,
+        ath:q.ath_price||null,sparkline_in_7d:{price:[]}
+      };
+    }).filter(Boolean);
+    if(!markets.length)throw new Error('CoinPaprika: aucune donnée exploitable');
+    const dom=globalData&&globalData.bitcoin_dominance_percentage;
+    return{markets,global:{data:{market_cap_percentage:{btc:dom}}},histories:lastHistories||{},source:'coinpaprika'};
+  },
+
+  // ── Orchestration : cache frais (≥60s) → CoinGecko (+retry) → CoinPaprika (secours) ──
+  async fetchAll(){
+    if(HISTORY.isFresh(C.MIN_CACHE_MS)){
+      return HISTORY.getCached(C.MIN_CACHE_MS).data;
+    }
+    try{
+      const data=await this.fetchAllCoinGecko();
+      HISTORY.setCache(data);
+      return data;
+    }catch(primaryErr){
+      const lastRaw=HISTORY.getCached(null); // n'importe quel ancien cache, ignore le TTL
+      try{
+        const data=await this.fetchAllPaprika(lastRaw?.data?.histories);
+        HISTORY.setCache(data);
+        return data;
+      }catch(fallbackErr){
+        const combined=new Error(`Source primaire (CoinGecko) indisponible : ${primaryErr.message}. Source de secours (CoinPaprika) également indisponible : ${fallbackErr.message}.`);
+        combined.primaryErr=primaryErr;
+        combined.fallbackErr=fallbackErr;
+        throw combined;
+      }
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  MATH — Technical Indicators
+// ═══════════════════════════════════════════════════
+const MATH = {
+  ema(prices,period){
+    if(!prices||prices.length<period)return null;
+    const k=2/(period+1);
+    let e=prices.slice(0,period).reduce((a,b)=>a+b,0)/period;
+    for(let i=period;i<prices.length;i++)e=prices[i]*k+e*(1-k);
+    return e;
+  },
+  emaArr(prices,period){
+    if(!prices||prices.length<period)return Array(prices?prices.length:0).fill(null);
+    const k=2/(period+1),res=Array(period-1).fill(null);
+    let e=prices.slice(0,period).reduce((a,b)=>a+b,0)/period;
+    res.push(e);
+    for(let i=period;i<prices.length;i++){e=prices[i]*k+e*(1-k);res.push(e)}
+    return res;
+  },
+  rsi(prices,period=14){
+    if(!prices||prices.length<period+2)return null;
+    let g=0,l=0;
+    for(let i=1;i<=period;i++){const d=prices[i]-prices[i-1];d>0?g+=d:l-=d}
+    let ag=g/period,al=l/period;
+    for(let i=period+1;i<prices.length;i++){
+      const d=prices[i]-prices[i-1];
+      ag=(ag*(period-1)+Math.max(0,d))/period;
+      al=(al*(period-1)+Math.max(0,-d))/period;
+    }
+    if(al===0)return 100;
+    return 100-100/(1+ag/al);
+  },
+  macd(prices){
+    if(!prices||prices.length<36)return null;
+    const e12=this.emaArr(prices,12),e26=this.emaArr(prices,26);
+    const ml=[];
+    for(let i=0;i<e12.length;i++){if(e12[i]!==null&&e26[i]!==null)ml.push(e12[i]-e26[i])}
+    if(ml.length<10)return null;
+    const sl=this.emaArr(ml,9);
+    const macdVal=ml[ml.length-1],sigVal=sl[sl.length-1];
+    const prevMacd=ml[ml.length-2],prevSig=sl[sl.length-2];
+    return{
+      value:macdVal,signal:sigVal,histogram:macdVal-sigVal,
+      bullish:macdVal>sigVal,
+      crossUp:prevMacd<=prevSig&&macdVal>sigVal,
+      crossDown:prevMacd>=prevSig&&macdVal<sigVal
+    };
+  },
+  pivots(prices,window=5){
+    if(!prices||prices.length<window*2+1)return{supports:[],resistances:[]};
+    const cur=prices[prices.length-1];
+    const ph=[],pl=[];
+    for(let i=window;i<prices.length-window;i++){
+      const sl=prices.slice(i-window,i+window+1);
+      if(prices[i]===Math.max(...sl)&&prices[i]>cur)ph.push(prices[i]);
+      if(prices[i]===Math.min(...sl)&&prices[i]<cur)pl.push(prices[i]);
+    }
+    const res=ph.sort((a,b)=>a-b).slice(0,4);
+    const sup=pl.sort((a,b)=>b-a).slice(0,4);
+    // Add 5/10/20% levels if missing
+    [0.95,0.90,0.85].forEach(f=>{const v=cur*f;if(!sup.some(s=>Math.abs(s-v)/cur<0.02))sup.push(v)});
+    [1.05,1.10,1.20].forEach(f=>{const v=cur*f;if(!res.some(r=>Math.abs(r-v)/cur<0.02))res.push(v)});
+    return{supports:sup.sort((a,b)=>b-a).slice(0,3),resistances:res.sort((a,b)=>a-b).slice(0,3)};
+  },
+  marketStructure(prices){
+    if(!prices||prices.length<30)return'neutral';
+    const data=prices.slice(-Math.min(60,prices.length));
+    const sw=6,sh=[],sl=[];
+    for(let i=sw;i<data.length-sw;i++){
+      const s=data.slice(i-sw,i+sw+1);
+      if(data[i]===Math.max(...s))sh.push(data[i]);
+      if(data[i]===Math.min(...s))sl.push(data[i]);
+    }
+    if(sh.length<2||sl.length<2)return'neutral';
+    const hh=sh[sh.length-1]>sh[sh.length-2];
+    const hl=sl[sl.length-1]>sl[sl.length-2];
+    const lh=sh[sh.length-1]<sh[sh.length-2];
+    const ll=sl[sl.length-1]<sl[sl.length-2];
+    if(hh&&hl)return'bullish';
+    if(lh&&ll)return'bearish';
+    return'neutral';
+  },
+  // Écart-type des rendements journaliers (%) sur une fenêtre — utilisé comme
+  // proxy de volatilité (rôle SOL : « recherche de rendement »). Aucune
+  // dépendance externe : dérivé du même tableau de prix déjà récupéré.
+  volatility(prices,window=14){
+    if(!prices||prices.length<window+1)return null;
+    const slice=prices.slice(-(window+1));
+    const rets=[];
+    for(let i=1;i<slice.length;i++)rets.push((slice[i]-slice[i-1])/slice[i-1]*100);
+    const mean=rets.reduce((a,b)=>a+b,0)/rets.length;
+    const variance=rets.reduce((a,b)=>a+(b-mean)*(b-mean),0)/rets.length;
+    return Math.sqrt(variance);
+  },
+  // Tendance du volume (déjà inclus dans la réponse market_chart de CoinGecko,
+  // simplement inutilisé jusqu'ici) : moyenne des 7 derniers jours vs les 7
+  // précédents. Aucun appel API supplémentaire.
+  volumeTrend(volumes){
+    if(!volumes||volumes.length<14)return null;
+    const v=volumes.map(x=>x[1]);
+    const recent=v.slice(-7),prior=v.slice(-14,-7);
+    const ra=recent.reduce((a,b)=>a+b,0)/recent.length;
+    const pa=prior.reduce((a,b)=>a+b,0)/prior.length;
+    if(!pa)return null;
+    const changePct=(ra-pa)/pa*100;
+    return{recentAvg:ra,priorAvg:pa,changePct,rising:changePct>8,falling:changePct<-8};
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  SIGNALS ENGINE
+// ═══════════════════════════════════════════════════
+const SIGNALS = {
+  analyze(coinId,historicalPrices,currentPrice,marketItem,dominance,volumes){
+    if(!historicalPrices||historicalPrices.length<30)return null;
+    const p=historicalPrices;
+    const rsi=MATH.rsi(p);
+    const macd=MATH.macd(p);
+    const ema20=MATH.ema(p,20);
+    const ema50=MATH.ema(p,50);
+    const ema100=MATH.ema(p,Math.min(100,p.length-1));
+    const ema200=MATH.ema(p,Math.min(200,p.length-1));
+    const pivots=MATH.pivots(p);
+    const structure=MATH.marketStructure(p);
+    const ath=marketItem?.ath||currentPrice*1.5;
+    const regime=this.regime({rsi,macd,ema20,ema50,ema100,ema200,structure,price:currentPrice});
+    const score=this.score({rsi,macd,ema20,ema50,ema100,ema200,structure,price:currentPrice,ath});
+    const scenarios=this.scenarios({regime,rsi,macd,structure});
+    const signal=this.signal(regime,rsi);
+    const action=this.action(score,regime);
+    const risk=this.risk(rsi,regime);
+    const p7=p.slice(-7),p30=p.slice(-30),p90=p.slice(-90);
+    const volatility14=MATH.volatility(p,14);
+    const volTrend=MATH.volumeTrend(volumes);
+    const accumulation=this.accumulation(p7,p30,volTrend);
+    return{rsi,macd,ema20,ema50,ema100,ema200,supports:pivots.supports,resistances:pivots.resistances,structure,regime,score,scenarios,signal,action,risk,prices:{p7,p30,p90,full:p},dominance,ath,volatility14,volTrend,accumulation};
+  },
+  // Heuristique « accumulation » (rôle ETH) : signature classique = prix
+  // plat/baissier alors que le volume monte (capital qui rentre sans pousser
+  // le prix). Dérivé uniquement des données déjà récupérées (pas de MVRV réel
+  // disponible sans source on-chain supplémentaire — voir règle d'honnêteté).
+  accumulation(p7,p30,volTrend){
+    if(!volTrend||!p30||p30.length<2)return{label:'indéterminée',cls:'neu'};
+    const chgPct=(p30[p30.length-1]-p30[0])/p30[0]*100;
+    if(chgPct<=3&&volTrend.rising)return{label:'probable (volume en hausse, prix stable/baissier)',cls:'pos'};
+    if(chgPct>3&&volTrend.rising)return{label:'mouvement confirmé par le volume',cls:'pos'};
+    if(chgPct>3&&volTrend.falling)return{label:'hausse peu confirmée (volume en baisse)',cls:'neu'};
+    if(chgPct<=-3&&volTrend.falling)return{label:'baisse peu vendeuse (volume faible)',cls:'neu'};
+    return{label:'sans signal net',cls:'neu'};
+  },
+  regime({rsi,macd,ema20,ema50,ema100,ema200,structure,price}){
+    let bull=0,bear=0,reasons=[];
+    if(ema20){price>ema20?bull++:bear++}
+    if(ema50){price>ema50?bull++:bear++}
+    if(ema100){price>ema100?bull++:bear++}
+    if(ema200){price>ema200?bull++:bear++}
+    if(macd){
+      if(macd.bullish){bull++}else{bear++}
+      if(macd.crossUp){bull+=2;reasons.push('Crossover MACD haussier')}
+      if(macd.crossDown){bear+=2;reasons.push('Crossover MACD baissier')}
+    }
+    if(rsi!=null){rsi>50?bull++:bear++}
+    if(structure==='bullish'){bull+=2;reasons.push('Structure de marché haussière (HH/HL)')}
+    else if(structure==='bearish'){bear+=2;reasons.push('Structure de marché baissière (LH/LL)')}
+    const margin=bull-bear,total=bull+bear;
+    const conf=total>0?Math.round(Math.abs(margin)/total*100):50;
+    let trend,emoji,label;
+    if(margin>=4){trend='bullish';emoji='🟢';label='Trend haussier confirmé'}
+    else if(margin<=-4){trend='bearish';emoji='🔴';label='Trend baissier confirmé'}
+    else{trend='neutral';emoji='🟡';label='Marché en transition'}
+    return{trend,emoji,label,bull,bear,conf,reasons};
+  },
+  score({rsi,macd,ema20,ema50,ema100,ema200,structure,price,ath}){
+    let s=0;
+    // RSI (0-30)
+    if(rsi!=null){
+      if(rsi<25)s+=30;else if(rsi<30)s+=26;else if(rsi<35)s+=21;else if(rsi<40)s+=16;
+      else if(rsi<50)s+=11;else if(rsi<60)s+=8;else if(rsi<70)s+=5;else if(rsi<80)s+=2;
+    }else s+=10;
+    // MACD (0-20)
+    if(macd){if(macd.crossUp)s+=20;else if(macd.bullish)s+=11;else s+=2}else s+=8;
+    // EMA (0-25)
+    if(ema20&&price>ema20)s+=5;if(ema50&&price>ema50)s+=7;if(ema100&&price>ema100)s+=7;if(ema200&&price>ema200)s+=6;
+    // Structure (0-15)
+    if(structure==='bullish')s+=15;else if(structure==='neutral')s+=7;else s+=1;
+    // ATH distance (0-10)
+    if(ath&&price){const d=(ath-price)/ath;if(d>0.6)s+=10;else if(d>0.45)s+=8;else if(d>0.3)s+=6;else if(d>0.15)s+=4;else s+=1}
+    return Math.min(100,Math.max(0,Math.round(s)));
+  },
+  scenarios({regime,rsi,macd,structure}){
+    let bear=30,neu=40,bull=30;
+    if(regime.trend==='bearish'){bear+=12;bull-=12}
+    else if(regime.trend==='bullish'){bear-=12;bull+=12}
+    if(rsi!=null){if(rsi<30){bear-=8;bull+=8}else if(rsi>70){bear+=8;bull-=8}}
+    if(macd){if(macd.crossUp){bear-=5;bull+=5}else if(macd.crossDown){bear+=5;bull-=5}}
+    bear=Math.max(10,Math.min(70,Math.round(bear)));
+    bull=Math.max(10,Math.min(70,Math.round(bull)));
+    neu=100-bear-bull;if(neu<10)neu=10;
+    const t=bear+neu+bull;
+    return{bear:Math.round(bear/t*100),neu:Math.round(neu/t*100),bull:100-Math.round(bear/t*100)-Math.round(neu/t*100)};
+  },
+  signal(regime,rsi){
+    if(regime.trend==='bullish'){if(rsi&&rsi>75)return{type:'neutral',emoji:'🟡',label:'Suracheté'};return{type:'bullish',emoji:'🟢',label:'Haussier'}}
+    if(regime.trend==='bearish'){if(rsi&&rsi<28)return{type:'neutral',emoji:'🟡',label:'Survendu'};return{type:'bearish',emoji:'🔴',label:'Baissier'}}
+    return{type:'neutral',emoji:'🟡',label:'Neutre'}
+  },
+  // Codes internes neutres (jamais affichés tels quels). La règle d'honnêteté
+  // (voir TEXT.actionLabel) impose des libellés conditionnels à l'affichage —
+  // on ne stocke donc plus d'impératif ("ACHETER") comme valeur de référence.
+  action(score,regime){
+    if(score>=72&&regime.trend!=='bearish')return'buy';
+    if(score>=55)return'dca';
+    if(score>=38)return'wait';
+    return'avoid';
+  },
+  risk(rsi,regime){
+    if(regime.trend==='bearish'||(rsi&&rsi>78))return'high';
+    if(regime.trend==='bullish'&&rsi&&rsi<40)return'low';
+    return'medium';
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  OPINIONS ENGINE (ETH / SOL / XRP)
+// ═══════════════════════════════════════════════════
+const OPINIONS = {
+  eth(a,price){
+    const os=a.rsi&&a.rsi<35,bear=a.regime.trend==='bearish',bull=a.regime.trend==='bullish';
+    const verdict=bear?{v:'Négatif',cls:'op-vn'}:bull?{v:'Positif',cls:'op-vp'}:{v:'Neutre',cls:'op-vne'};
+    const str=['Infrastructure DeFi dominante, +$50Mrd TVL — socle institutionnel réel','Whale accumulation détectée — sorties massives des exchanges','Glamsterdam upgrade en cours — amélioration du scaling L1','JPMorgan JLTXX tokenized fund déployé sur Ethereum'];
+    const wk=['ETH/BTC ratio à multi-year lows — sous-performance chronique structurelle','Upgrade Fusaka réduit les frais L1 → mécanisme de burn affaibli','Culper Research short public — signal fondamental d\'attention','Forte pression des ETF outflows sur l\'ensemble du marché crypto'];
+    if(os)str.unshift('RSI en zone de survente → rebond technique crédible');
+    if(bear)wk.unshift('Structure technique baissière confirmée sur tous les EMAs');
+    const acc=bear&&!os?'Non':(os?'Attendre':'Oui progressivement');
+    const accExpl=bear&&!os?'Structure trop dégradée, attendre la confirmation d\'un plancher.':(os?'Attendre la confirmation technique avant d\'entrer progressivement.':'Accumuler très prudemment sur les supports majeurs, DCA strict.');
+    return{verdict,str,wk,acc,accExpl,pctFromAth:price&&a.ath?((a.ath-price)/a.ath*100).toFixed(1):null};
+  },
+  sol(a,price){
+    const os=a.rsi&&a.rsi<38,bear=a.regime.trend==='bearish';
+    const verdict=os?{v:'Constructif',cls:'op-vne'}:bear?{v:'Neutre négatif',cls:'op-vn'}:{v:'Neutre',cls:'op-vne'};
+    const str=['238.5M transactions/jour — activité réseau robuste et mesurable','Fees quotidiennes 3× supérieures à Ethereum — usage concret','Correction −78% depuis ATH → asymétrie risque/rendement élevée','Firedancer + Alpenglow → fiabilité réseau en nette amélioration','ETFs ~$1Mrd AUM, intégration Goldman Sachs / BlackRock'];
+    const wk=['Tous les EMAs en résistance overhead — structure entièrement baissière','Revenus concentrés sur memecoins et spéculation — modèle fragile','Fortement corrélé à BTC — ne peut pas performer de façon indépendante','Récupération vers ATH ($295) très longue même en bull market'];
+    if(os)str.unshift('RSI en zone de survente — zone d\'accumulation potentielle');
+    const acc=os?'Oui progressivement':bear?'Attendre':'Attendre';
+    const accExpl=os?'Meilleure asymétrie parmi les altcoins. DCA progressif sur $60–63, stop sous $55.':bear?'Attendre la stabilisation de BTC et une confirmation technique avant d\'entrer.':'Attendre la reprise de BTC et une clôture hebdo au-dessus de la résistance clé.';
+    return{verdict,str,wk,acc,accExpl,pctFromAth:price&&a.ath?((a.ath-price)/a.ath*100).toFixed(1):null};
+  },
+  xrp(a,price){
+    const xOs=a.rsi&&a.rsi<30;
+    const verdict=xOs?{v:'Neutre (rebond technique)',cls:'op-vne'}:{v:'Négatif',cls:'op-vn'};
+    const str=['Clarté réglementaire acquise (procès SEC clos)','Partenariats bancaires existants — RippleNet fonctionnel'];
+    const wk=['Adoption utility bancaire réelle quasi absente','Série de lower lows — distribution institutionnelle active','Pas de catalyseur fondamental MT/LT identifié','ETF XRP sous-performants vs flux BTC/ETH','Dépendance excessive aux catalyseurs réglementaires externes'];
+    if(xOs)str.unshift('RSI < 30 → oversold extrême, rebond technique probable CT');
+    const acc='Non';
+    const accExpl=xOs?'Seul un trade de rebond oversold est envisageable, avec stop strict sous $1.00. Pas de thèse MT.':'Pas de catalyseur fondamental. Pas de position recommandée à ce stade.';
+    return{verdict,str,wk,acc,accExpl,pctFromAth:price&&a.ath?((a.ath-price)/a.ath*100).toFixed(1):null};
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  TEXT GENERATOR (plain language summaries)
+// ═══════════════════════════════════════════════════
+const TEXT = {
+  situation(sym,analysis,chg24){
+    const{regime,rsi,structure,score}=analysis;
+    const t=regime.trend;
+    let txt=``;
+    if(t==='bearish')txt+=`Le marché ${sym} est en tendance baissière confirmée. `;
+    else if(t==='bullish')txt+=`Le marché ${sym} affiche une tendance haussière. `;
+    else txt+=`Le marché ${sym} est en phase de transition sans direction claire. `;
+    if(rsi&&rsi<30)txt+=`Le RSI est en zone de survente extrême (${FMT.num(rsi,1)}), ce qui signifie que les vendeurs s'épuisent.`;
+    else if(rsi&&rsi<40)txt+=`Le RSI indique une pression vendeuse forte (${FMT.num(rsi,1)}).`;
+    else if(rsi&&rsi>70)txt+=`Le RSI est en zone de surachat (${FMT.num(rsi,1)}), attention à un essoufflement.`;
+    else if(rsi)txt+=`Le RSI est neutre (${FMT.num(rsi,1)}).`;
+    return txt;
+  },
+  why(analysis,chg24,chg7,price){
+    const{regime,macd,ema50,ema200}=analysis;
+    const up=chg24>=0;
+    let txt='';
+    if(up){
+      if(macd&&macd.crossUp)txt='Le MACD vient de croiser à la hausse — un signal technique positif. ';
+      else if(regime.trend==='bullish')txt='La structure haussière attire des acheteurs supplémentaires. ';
+      else txt='Rebond technique après une zone de survente. ';
+      if(ema50&&price&&price>ema50*0.98)txt+='La moyenne mobile 50j soutient le mouvement. ';
+    }else{
+      if(macd&&macd.crossDown)txt='Le MACD vient de croiser à la baisse — signal de vente activé. ';
+      else if(regime.trend==='bearish')txt='La pression vendeuse continue — la structure est baissière. ';
+      else txt='Correction dans un contexte de marché incertain. ';
+      txt+='Les sorties de capitaux ETF et un contexte macro hawkish (Fed) pèsent sur l\'ensemble du marché crypto.';
+    }
+    if(Math.abs(chg7||0)>15)txt+=(chg7<0?' La baisse sur 7 jours est significative.'  :' La hausse sur 7 jours est notable.');
+    return txt;
+  },
+  timing(analysis){
+    const{score,regime,rsi}=analysis;
+    if(score>=72&&regime.trend!=='bearish')return'Les indicateurs sont favorables. Les supports tiennent, le momentum revient. Un bon moment pour entrer, idéalement en plusieurs fois.';
+    if(score>=55)return'Il n\'est pas impossible d\'entrer progressivement, mais le marché reste incertain. Une stratégie DCA (achats fractionnés) réduit le risque de se positionner au mauvais moment.';
+    if(rsi&&rsi<28)return'La survente extrême peut offrir un rebond technique. Ce n\'est pas une thèse d\'investissement, mais un point d\'entrée tactique possible avec un stop-loss strict.';
+    if(regime.trend==='bearish')return'La tendance est baissière. Il n\'est pas encore prudent d\'investir. Attendre une confirmation de retournement (clôture hebdomadaire au-dessus d\'une résistance clé).';
+    return'Le marché manque de direction. Mieux vaut attendre un signal clair avant de s\'engager.';
+  },
+  actionClass(action){
+    if(action==='buy')return'action-buy';
+    if(action==='dca')return'action-dca';
+    if(action==='avoid')return'action-avoid';
+    return'action-wait';
+  },
+  // RÈGLE D'HONNÊTETÉ : jamais d'impératif ("acheter maintenant"), jamais de
+  // certitude. Toujours une formulation conditionnelle, quel que soit le code
+  // interne (buy/dca/wait/avoid).
+  actionLabel(action){
+    if(action==='buy')return'Conditions favorables';
+    if(action==='dca')return'Accumulation prudente possible';
+    if(action==='avoid')return'Contexte prudent';
+    return'Confirmation nécessaire';
+  },
+  riskLabel(risk){
+    if(risk==='low')return'🟢 Faible';if(risk==='high')return'🔴 Élevé';return'🟡 Moyen';
+  },
+  horizons(action){
+    if(action==='buy')return{ct:'Bon',mt:'Favorable',lt:'Favorable'};
+    if(action==='dca')return{ct:'Neutre',mt:'Acceptable',lt:'Favorable'};
+    if(action==='avoid')return{ct:'Risqué',mt:'Risqué',lt:'Incertain'};
+    return{ct:'Neutre',mt:'Neutre',lt:'Incertain'};
+  },
+  scoreInterp(s){
+    if(s<=30)return{txt:'Éviter',cls:'neg',emoji:'🔴'};if(s<=50)return{txt:'Faible conviction',cls:'neg',emoji:'🔴'};
+    if(s<=70)return{txt:'Acceptable',cls:'neu',emoji:'🟡'};if(s<=85)return{txt:'Intéressant',cls:'pos',emoji:'🟢'};
+    return{txt:'Très favorable',cls:'pos',emoji:'🟢'};
+  },
+  // Traductions en français simple des sections techniques — une phrase par
+  // section, posée juste au-dessus des données brutes (RSI, MACD, niveaux…)
+  // pour qu'un débutant comprenne le sens sans connaître le vocabulaire.
+  regimeExplain(regime,sym){
+    const c=regime.conf;
+    const confTxt=c>=70?'avec un bon niveau de confiance':c>=50?'avec une confiance modérée':'mais le signal reste incertain';
+    if(regime.trend==='bullish')return`${sym} suit une tendance haussière depuis plusieurs jours, ${confTxt}.`;
+    if(regime.trend==='bearish')return`${sym} suit une tendance baissière depuis plusieurs jours, ${confTxt}.`;
+    return`${sym} évolue sans tendance claire pour le moment, ${confTxt}.`;
+  },
+  indicatorsExplain(a){
+    let bull=0,bear=0;
+    if(a.rsi!=null){a.rsi>50?bull++:bear++}
+    if(a.macd){a.macd.bullish?bull++:bear++}
+    if(a.structure==='bullish')bull++;else if(a.structure==='bearish')bear++;
+    if(bull>bear)return'Les indicateurs techniques sont majoritairement alignés à la hausse.';
+    if(bear>bull)return'Les indicateurs techniques sont majoritairement alignés à la baisse.';
+    return'Les indicateurs techniques sont partagés — aucune direction claire ne se dégage.';
+  },
+  levelsExplain(a,price){
+    const sup=a.supports&&a.supports[0],res=a.resistances&&a.resistances[0];
+    if(!sup&&!res)return'Aucun niveau clé identifiable sur la période observée.';
+    if(sup&&res){
+      return Math.abs(price-sup)<Math.abs(res-price)
+        ?`Le prix est actuellement plus proche du support (${FMT.price(sup)}) que de la résistance (${FMT.price(res)}).`
+        :`Le prix est actuellement plus proche de la résistance (${FMT.price(res)}) que du support (${FMT.price(sup)}).`;
+    }
+    return sup?`Seul un support a été identifié, à ${FMT.price(sup)}.`:`Seule une résistance a été identifiée, à ${FMT.price(res)}.`;
+  },
+  scenariosExplain(scenarios){
+    const list=[{label:'baissier',v:scenarios.bear},{label:'neutre',v:scenarios.neu},{label:'haussier',v:scenarios.bull}].sort((a,b)=>b.v-a.v);
+    return`Selon le modèle, le scénario le plus probable aujourd'hui est ${list[0].label} (${list[0].v}%), suivi du scénario ${list[1].label} (${list[1].v}%).`;
+  },
+  execOneLiner(state){
+    const scores=C.coins.map(c=>({sym:c.sym,score:state[c.id]?.analysis?.score||0}));
+    const best=scores.reduce((a,b)=>a.score>b.score?a:b);
+    const worst=scores.reduce((a,b)=>a.score<b.score?a:b);
+    const btcA=state.bitcoin?.analysis;
+    if(!btcA)return'Données insuffisantes pour une conclusion.';
+    const t=btcA.regime.trend;
+    if(t==='bearish')return`Le marché est en tendance baissière — ${best.sym} est l\'actif le plus résistant mais la patience est la meilleure stratégie aujourd\'hui.`;
+    if(t==='bullish')return`Le marché est haussier — ${best.sym} offre le meilleur setup technique pour entrer ou renforcer progressivement.`;
+    return`Le marché est en transition — conserver ses positions existantes, éviter les nouvelles entrées impulsives, surveiller ${best.sym} qui montre la meilleure attractivité (${best.score}/100).`;
+  },
+  // Synthèse cross-actifs en une phrase (Overview). Réutilise scoreInterp.cls
+  // (pos/neu/neg) — aucun nouveau seuil, pour rester cohérent avec le score
+  // déjà affiché sur chaque carte.
+  dailyVerdict(state){
+    const items=C.coins.map(c=>{
+      const d=state[c.id];if(!d||!d.analysis)return null;
+      return{sym:c.sym,cls:this.scoreInterp(d.analysis.score).cls};
+    }).filter(Boolean);
+    if(!items.length)return'Données insuffisantes pour une synthèse aujourd\'hui.';
+    const strong=items.filter(i=>i.cls==='pos');
+    const weak=items.filter(i=>i.cls==='neg');
+    const neutral=items.filter(i=>i.cls==='neu');
+    if(!strong.length&&!weak.length)return`Aucun signal fort aujourd'hui — les ${items.length} actifs suivis sont dans une zone neutre.`;
+    const parts=[];
+    if(strong.length)parts.push(`${strong.length} opportunité${strong.length>1?'s':''} forte${strong.length>1?'s':''} (${strong.map(i=>i.sym).join(', ')})`);
+    if(neutral.length)parts.push(`${neutral.length} neutre${neutral.length>1?'s':''}`);
+    if(weak.length)parts.push(`${weak.length} à éviter (${weak.map(i=>i.sym).join(', ')})`);
+    return`Aujourd'hui : ${parts.join(', ')}.`;
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  COPILOT — Moteur de synthèse du copilote
+//  Calcule, à partir des analyses déjà produites par SIGNALS (aucune donnée
+//  supplémentaire, aucun appel réseau de plus) :
+//    • le score de CONFIANCE (obligatoire)
+//    • le moteur CONTRADICTOIRE (positif / négatif / conclusion)
+//    • le moteur d'INVALIDATION ("qu'est-ce qui ferait changer d'avis ?")
+//    • le moteur de CHANGEMENT (vs dernière mise à jour enregistrée)
+//    • le moteur d'INACTION (capacité de dire "ne rien faire")
+//    • la synthèse globale BTC/ETH/SOL/XRP (régime / qualité du capital /
+//      accélération / rotation) avec pondération dynamique par rôle.
+//  Règle d'honnêteté : tout texte généré ici passe par un vocabulaire
+//  conditionnel (jamais d'impératif, jamais de certitude absolue).
+// ═══════════════════════════════════════════════════
+const COPILOT = {
+
+  // ── Niveau de confiance générique (0-39 🔴 / 40-69 🟡 / 70-100 🟢) ──
+  levelOf(score){
+    const level=score<40?'low':score<70?'medium':'high';
+    return{level,
+      label:level==='low'?'Faible':level==='medium'?'Moyenne':'Élevée',
+      emoji:level==='low'?'🔴':level==='medium'?'🟡':'🟢'};
+  },
+
+  // ── INDICE DE DÉCISION (Phase 3) : couche de synthèse pure. Ne recalcule
+  // rien — combine deux briques déjà produites ailleurs (opportunité =
+  // SIGNALS.score / COPILOT.globalOpportunity ; confiance =
+  // COPILOT.assetConfidence / globalConfidence). Produit, pas moyenne : les
+  // deux doivent être hauts pour que l'indice monte, un seul facteur fort ne
+  // compense jamais l'autre. « fragile » signale un score élevé porté par
+  // une confiance faible — exactement le cas que l'indice ne doit pas
+  // présenter comme fiable. Bandes et seuils repris tels quels du brief.
+  decisionIndex(opportunity,confidenceScore){
+    if(opportunity==null||confidenceScore==null)
+      return{score:null,band:'inconnu',txt:'Inconnu',cls:'neu',emoji:'⚪',fragile:false};
+    const score=Math.round((opportunity/100)*(confidenceScore/100)*100);
+    const fragile=opportunity>50&&confidenceScore<40;
+    let band,txt,cls,emoji;
+    if(score<=30){band='ignorer';txt='Ignorer';cls='neg';emoji='🔴'}
+    else if(score<=50){band='attendre';txt='Attendre';cls='neg';emoji='🟠'}
+    else if(score<=70){band='surveiller';txt='Surveiller';cls='neu';emoji='🟡'}
+    else if(score<=85){band='favorable';txt='Favorable';cls='pos';emoji='🟢'}
+    else{band='tres-favorable';txt='Très favorable';cls='pos';emoji='🟢'}
+    return{score,band,txt,cls,emoji,fragile};
+  },
+
+  rsiBucket(rsi){if(rsi==null)return null;if(rsi<30)return'survente';if(rsi>70)return'surachat';return'neutre'},
+
+  // Cohérence multi-timeframe : les fenêtres 7j / 30j / 90j racontent-elles la
+  // même histoire de direction ? (heuristique simple : signe de la variation
+  // sur chaque fenêtre, déjà disponible dans a.prices)
+  mtfCoherence(a){
+    const dir=arr=>{if(!arr||arr.length<2)return 0;const d=arr[arr.length-1]-arr[0];return d>0?1:d<0?-1:0};
+    const dirs=[dir(a.prices.p7),dir(a.prices.p30),dir(a.prices.p90)].filter(x=>x!==0);
+    if(!dirs.length)return 50;
+    const pos=dirs.filter(x=>x>0).length,neg=dirs.filter(x=>x<0).length;
+    return Math.round(Math.max(pos,neg)/3*100);
+  },
+
+  // Contradictions détectées entre indicateurs (alimente la confiance ET le
+  // moteur contradictoire). Liste volontairement courte et explicite.
+  contradictions(a,price){
+    const f=[];
+    if(a.rsi!=null&&a.macd){
+      const rsiBull=a.rsi>=50,macdBull=a.macd.bullish;
+      if(rsiBull!==macdBull)f.push('RSI et MACD ne sont pas alignés');
+    }
+    if(a.structure==='bullish'&&a.ema50&&price<a.ema50)f.push('Structure haussière mais prix sous l\'EMA50');
+    if(a.structure==='bearish'&&a.ema50&&price>a.ema50)f.push('Structure baissière mais prix au-dessus de l\'EMA50');
+    if(a.ema50&&a.ema200){
+      const a50=price>a.ema50,a200=price>a.ema200;
+      if(a50!==a200)f.push('Moyennes mobiles 50/200 jours non alignées');
+    }
+    if(a.volTrend&&a.prices.p30&&a.prices.p30.length>1){
+      const p30=a.prices.p30,chg=(p30[p30.length-1]-p30[0])/p30[0]*100;
+      if(chg>3&&a.volTrend.falling)f.push('Hausse de prix non confirmée par le volume');
+      if(chg<-3&&a.volTrend.rising)f.push('Baisse de prix accompagnée d\'un volume croissant');
+    }
+    if(a.macd&&a.macd.crossUp&&a.rsi&&a.rsi>72)f.push('Signal haussier récent mais RSI déjà suracheté');
+    if(a.macd&&a.macd.crossDown&&a.rsi&&a.rsi<28)f.push('Signal baissier récent mais RSI déjà survendu');
+    return f;
+  },
+
+  // ── SCORE DE CONFIANCE (obligatoire) ──
+  // Dépend de : accord entre indicateurs, fraîcheur des données, cohérence
+  // multi-timeframe, contradictions détectées. Confiance ≠ Opportunité.
+  assetConfidence(a,price,freshness,flags){
+    const total=a.regime.bull+a.regime.bear;
+    const ratio=total>0?Math.max(a.regime.bull,a.regime.bear)/total:0.5;
+    const agreement=Math.round(Math.max(0,(ratio-0.5)/0.5)*100);
+    const multiTF=this.mtfCoherence(a);
+    const contraScore=Math.max(0,100-flags.length*16);
+    const raw=agreement*0.30+multiTF*0.25+freshness*0.20+contraScore*0.25;
+    const score=Math.min(100,Math.max(0,Math.round(raw)));
+    return{score,...this.levelOf(score),factors:{agreement,freshness,multiTF,contradictions:contraScore,flagsCount:flags.length}};
+  },
+
+  // Fraîcheur des données (0-100), fonction pure : âge depuis le dernier
+  // succès de synchronisation + source (le repli CoinPaprika réutilise un
+  // historique technique potentiellement daté → plafond de fraîcheur).
+  freshness(asOfTs,source){
+    const age=asOfTs?Date.now()-asOfTs:Infinity;
+    let base;
+    if(age<C.REFRESH_MS)base=100;
+    else if(age<C.REFRESH_MS*2)base=75;
+    else if(age<C.REFRESH_MS*4)base=50;
+    else if(age<C.REFRESH_MS*12)base=35;
+    else base=20;
+    if(source==='coinpaprika')base=Math.min(base,60);
+    return base;
+  },
+
+  // ── MOTEUR CONTRADICTOIRE (obligatoire) : POSITIF / NÉGATIF / CONCLUSION ──
+  proCon(a,d,confScore){
+    const pos=[],neg=[];
+    if(a.rsi!=null){
+      if(a.rsi<35)pos.push(`RSI bas (${a.rsi.toFixed(0)}) — zone de survente, rebond technique possible`);
+      else if(a.rsi>65)neg.push(`RSI élevé (${a.rsi.toFixed(0)}) — risque de surachat`);
+    }
+    if(a.macd){
+      if(a.macd.crossUp)pos.push('Croisement MACD haussier récent');
+      else if(a.macd.crossDown)neg.push('Croisement MACD baissier récent');
+      else if(a.macd.bullish)pos.push('MACD positif');
+      else neg.push('MACD négatif');
+    }
+    if(a.structure==='bullish')pos.push('Structure de marché haussière (plus hauts et plus bas croissants)');
+    else if(a.structure==='bearish')neg.push('Structure de marché baissière (plus bas et plus hauts décroissants)');
+    else neg.push('Structure de marché encore indécise');
+    const above50=a.ema50&&d.price>a.ema50,above200=a.ema200&&d.price>a.ema200;
+    if(a.ema50&&a.ema200){
+      if(above50&&above200)pos.push('Prix au-dessus des moyennes mobiles 50 et 200 jours');
+      else if(!above50&&!above200)neg.push('Prix sous les moyennes mobiles 50 et 200 jours');
+      else neg.push('Moyennes mobiles non alignées — signal mixte');
+    }
+    if(a.volTrend){
+      if(a.volTrend.rising)pos.push('Volume en hausse sur 7 jours — flux plus actifs');
+      else if(a.volTrend.falling)neg.push('Volume en baisse sur 7 jours — mouvement peu confirmé');
+    }
+    if(!pos.length)pos.push('Aucun signal fort positif identifié pour l\'instant');
+    if(!neg.length)neg.push('Aucune fragilité majeure détectée pour l\'instant');
+    let conclusion;
+    if(confScore<40)conclusion='Signaux contradictoires — la prudence est de mise avant toute conclusion.';
+    else if(pos.length>neg.length)conclusion=confScore>=70?'Contexte favorable, avec un bon niveau de confiance.':'Contexte prometteur mais encore fragile.';
+    else if(neg.length>pos.length)conclusion=confScore>=70?'Contexte défavorable, avec un bon niveau de confiance.':'Contexte fragile, la prudence reste de mise.';
+    else conclusion='Signaux équilibrés — aucune direction ne se dégage nettement.';
+    return{positives:pos,negatives:neg,conclusion};
+  },
+
+  // ── MOTEUR D'INVALIDATION (obligatoire) : « Qu'est-ce qui ferait changer d'avis ? » ──
+  invalidationList(a){
+    const items=[];
+    const sup=a.supports&&a.supports[0],res=a.resistances&&a.resistances[0];
+    if(a.regime.trend==='bullish'){
+      if(sup)items.push(`Clôture sous le support ${FMT.price(sup)}`);
+      items.push('Le MACD croise à la baisse');
+      if(a.ema50)items.push(`Le prix retombe durablement sous l'EMA50 (${FMT.price(a.ema50)})`);
+    }else if(a.regime.trend==='bearish'){
+      if(res)items.push(`Clôture au-dessus de la résistance ${FMT.price(res)}`);
+      items.push('Le MACD croise à la hausse');
+      if(a.ema50)items.push(`Le prix repasse durablement au-dessus de l'EMA50 (${FMT.price(a.ema50)})`);
+    }else{
+      if(res)items.push(`Cassure haussière au-dessus de ${FMT.price(res)}`);
+      if(sup)items.push(`Cassure baissière sous ${FMT.price(sup)}`);
+    }
+    if(a.volTrend&&a.volTrend.falling)items.push('Le volume continue de se contracter (mouvement non confirmé)');
+    if(a.rsi!=null&&a.rsi>70)items.push('Le RSI retombe sous 70 après une phase de surachat');
+    if(a.rsi!=null&&a.rsi<30)items.push('Le RSI repasse au-dessus de 30 sans rebond confirmé');
+    return items.slice(0,4);
+  },
+
+  // ── MOTEUR DE CHANGEMENT (obligatoire) : vs dernière mise à jour enregistrée ──
+  change(todaySnap,prevEntry,sym){
+    if(!prevEntry)return{changed:null,text:'Première analyse enregistrée pour cet actif — pas encore d\'historique pour comparer.',deltaScore:null,deltaConfidence:null};
+    const prev=prevEntry.coins&&prevEntry.coins[sym];
+    if(!prev)return{changed:null,text:'Pas de donnée comparable pour la session précédente.',deltaScore:null,deltaConfidence:null};
+    const deltaScore=(todaySnap.score!=null&&prev.score!=null)?todaySnap.score-prev.score:null;
+    const deltaConfidence=(todaySnap.confidence!=null&&prev.confidence!=null)?todaySnap.confidence-prev.confidence:null;
+    const reasons=[];
+    if(prev.regime&&todaySnap.regime&&prev.regime!==todaySnap.regime)reasons.push('régime');
+    if(prev.rsiBucket&&prev.rsiBucket!==todaySnap.rsiBucket)reasons.push('RSI');
+    if(prev.macdBullish!=null&&prev.macdBullish!==todaySnap.macdBullish)reasons.push('MACD');
+    if(prev.structure&&prev.structure!==todaySnap.structure)reasons.push('structure');
+    if(prev.action&&prev.action!==todaySnap.action)reasons.push('action suggérée');
+    const significant=(deltaScore!=null&&Math.abs(deltaScore)>=6)||(deltaConfidence!=null&&Math.abs(deltaConfidence)>=8)||reasons.length>0;
+    if(!significant)return{changed:false,text:'Aucun changement significatif depuis la dernière mise à jour.',deltaScore,deltaConfidence};
+    const parts=[];
+    if(deltaConfidence!=null)parts.push(`Confiance ${prev.confidence}% → ${todaySnap.confidence}%`);
+    if(deltaScore!=null)parts.push(`Score ${prev.score} → ${todaySnap.score}`);
+    let text=parts.join(' · ');
+    text+=reasons.length?(text?' — ':'')+`facteurs : ${reasons.join(', ')}.`:'.';
+    return{changed:true,text,deltaScore,deltaConfidence};
+  },
+
+  // ── Bilan complet d'un actif : combine les 4 moteurs obligatoires ──
+  // (appelé une seule fois par actif dans APP.processData, puis réutilisé
+  // partout : carte Niveau 2, onglet détaillé, synthèse globale, historique)
+  analyzeCoin(coin,a,d,prevEntry,freshness){
+    const flags=this.contradictions(a,d.price);
+    const confidence=this.assetConfidence(a,d.price,freshness,flags);
+    const proCon=this.proCon(a,d,confidence.score);
+    const invalidation=this.invalidationList(a);
+    const index=this.decisionIndex(a.score,confidence.score);
+    const todaySnap={score:a.score,confidence:confidence.score,regime:a.regime.trend,rsiBucket:this.rsiBucket(a.rsi),macdBullish:a.macd?a.macd.bullish:null,structure:a.structure,action:a.action};
+    const change=this.change(todaySnap,prevEntry,coin.sym);
+    return{confidence,proCon,invalidation,change,todaySnap,flags,index};
+  },
+
+  // ── Pondération dynamique par rôle (BTC régime / ETH qualité du capital /
+  // SOL accélération / XRP rotation) — plus un actif montre une conviction
+  // technique nette (score loin de 50), plus son poids se rapproche du haut
+  // de sa fourchette indicative ; sinon il reste proche du bas. Renormalisé
+  // en 2 passes pour respecter au mieux les fourchettes du brief tout en
+  // garantissant un total de 100%. ──
+  weights(state){
+    const raw={};
+    C.coins.forEach(c=>{
+      const a=state[c.id]?.analysis;
+      const conviction=a?Math.min(1,Math.abs(a.score-50)/50):0;
+      const[lo,hi]=c.wRange;
+      raw[c.id]=lo+conviction*(hi-lo);
+    });
+    const norm=src=>{const t=Object.values(src).reduce((x,y)=>x+y,0)||1;const o={};C.coins.forEach(c=>o[c.id]=src[c.id]/t*100);return o};
+    const pass1=norm(raw);
+    const clamped={};
+    C.coins.forEach(c=>{const[lo,hi]=c.wRange;clamped[c.id]=Math.min(hi,Math.max(lo,pass1[c.id]))});
+    return norm(clamped);
+  },
+
+  globalOpportunity(state,w){
+    let total=0,wsum=0;
+    C.coins.forEach(c=>{const a=state[c.id]?.analysis;if(!a)return;total+=a.score*(w[c.id]||0);wsum+=w[c.id]||0});
+    return wsum?Math.round(total/wsum):50;
+  },
+
+  globalRisk(state,w){
+    const map={low:20,medium:55,high:88};
+    let total=0,wsum=0;
+    C.coins.forEach(c=>{const a=state[c.id]?.analysis;if(!a)return;total+=(map[a.risk]||55)*(w[c.id]||0);wsum+=w[c.id]||0});
+    const score=wsum?total/wsum:55;
+    return{score:Math.round(score),label:score<35?'Faible':score<65?'Moyen':'Élevé',emoji:score<35?'🟢':score<65?'🟡':'🔴'};
+  },
+
+  globalConfidence(state,w,anomalyFlag){
+    let total=0,wsum=0;
+    C.coins.forEach(c=>{const cf=state[c.id]?.copilot?.confidence;if(!cf)return;total+=cf.score*(w[c.id]||0);wsum+=w[c.id]||0});
+    let score=wsum?total/wsum:50;
+    if(anomalyFlag)score-=5;
+    score=Math.min(100,Math.max(0,Math.round(score)));
+    return{score,...this.levelOf(score)};
+  },
+
+  // Rôle XRP : rotation / décorrélation. Utilise uniquement les données déjà
+  // récupérées (variation 24h) — aucun appel supplémentaire.
+  xrpAnomaly(state){
+    const xrp=state.ripple,btc=state.bitcoin;
+    if(!xrp||!btc||xrp.change24h==null||btc.change24h==null)
+      return{flag:false,text:'Données insuffisantes pour évaluer une rotation inhabituelle.'};
+    const xc=xrp.change24h,bc=btc.change24h;
+    const flag=(Math.sign(xc)!==Math.sign(bc)&&Math.abs(xc)>3)||Math.abs(xc-bc)>8;
+    return{flag,text:flag
+      ?`Mouvement inhabituel : XRP ${FMT.pct(xc)} sur 24h contre BTC ${FMT.pct(bc)} — décorrélation notable.`
+      :'Aucune rotation inhabituelle détectée — XRP évolue globalement en ligne avec BTC.'};
+  },
+
+  // Proxy de sentiment interne (rôle BTC). À ne jamais présenter comme
+  // l'indice Fear & Greed officiel — il s'agit d'une estimation dérivée
+  // uniquement du RSI et du régime déjà calculés, sans source externe.
+  sentimentProxy(a){
+    if(a.rsi==null)return null;
+    const trendAdj=a.regime.trend==='bullish'?a.regime.conf:a.regime.trend==='bearish'?(100-a.regime.conf):50;
+    const score=Math.min(100,Math.max(0,Math.round(a.rsi*0.6+trendAdj*0.4)));
+    const label=score<25?'Peur extrême':score<45?'Peur':score<55?'Neutre':score<75?'Avidité':'Avidité extrême';
+    return{score,label};
+  },
+
+  // ── État du marché (5 états du brief) — classification déterministe à
+  // partir du régime BTC, du RSI BTC et de la qualité de la participation
+  // (score ETH), pour rester explicable. ──
+  classifyState(state,opportunity){
+    const btcA=state.bitcoin?.analysis;
+    if(!btcA)return{key:'unknown',emoji:'⚪',label:'Données insuffisantes'};
+    const ethScore=state.ethereum?.analysis?.score||0;
+    const trend=btcA.regime.trend,rsi=btcA.rsi!=null?btcA.rsi:50;
+    const momentumFading=btcA.macd?(btcA.macd.crossDown||!btcA.macd.bullish):false;
+    if(rsi>=72&&momentumFading&&trend!=='bullish')return{key:'distribution',emoji:'🟠',label:'Distribution'};
+    if(trend==='bearish')return{key:'prudence',emoji:'🔴',label:'Prudence'};
+    if(trend==='bullish'){
+      if(opportunity>=62&&ethScore>=50)return{key:'expansion',emoji:'🟢',label:'Expansion'};
+      return{key:'transition',emoji:'🟡',label:'Transition'};
+    }
+    if(rsi<=42&&opportunity>=45)return{key:'accumulation',emoji:'🟢',label:'Accumulation'};
+    return{key:'transition',emoji:'🟡',label:'Transition'};
+  },
+
+  // ── MOTEUR D'INACTION (obligatoire) : le copilote doit pouvoir dire
+  // explicitement « ne rien faire », sans jamais forcer une action. ──
+  todayActions(stateKey,confidenceLevel,hasHistory,anyChanged){
+    const bullets=[];
+    switch(stateKey){
+      case'accumulation':bullets.push('Poursuivre une accumulation prudente (DCA), si déjà engagée','Rien d\'urgent à faire dans l\'immédiat');break;
+      case'expansion':bullets.push('Conditions favorables à un renforcement progressif','Rester attentif à un essoufflement du momentum');break;
+      case'distribution':bullets.push('Éviter toute nouvelle entrée tant que la structure ne se clarifie pas','Confirmation nécessaire avant un renforcement');break;
+      case'prudence':bullets.push('Capital préservé, pas de nouvelle position','Attendre une confirmation de stabilisation');break;
+      default:bullets.push('Attendre une confirmation avant d\'agir','Aucune action nécessaire pour l\'instant');
+    }
+    let isInaction=false,why=null;
+    if(confidenceLevel==='low'){
+      isInaction=true;
+      why='Le niveau de confiance est trop faible pour justifier une action — les signaux se contredisent.';
+    }else if(hasHistory&&!anyChanged){
+      isInaction=true;
+      why='Le contexte n\'a pas changé de façon significative depuis la dernière mise à jour.';
+    }
+    return{bullets,isInaction,why};
+  },
+
+  // Choisit l'actif dont le changement pèse le plus dans la synthèse globale
+  // (ex. « ETH améliore le contexte. »), ou un message honnête si rien à
+  // comparer / rien de significatif.
+  globalChangeSummary(state){
+    const verbs={up:'améliore le contexte',down:'fragilise le contexte'};
+    const ranked=C.coins.map(c=>({coin:c,ch:state[c.id]?.copilot?.change})).filter(x=>x.ch);
+    if(!ranked.length)return'Données insuffisantes pour évaluer un changement.';
+    if(ranked.every(x=>x.ch.changed===null))return'Première session enregistrée — pas encore d\'historique pour comparer.';
+    const changedOnes=ranked.filter(x=>x.ch.changed);
+    if(!changedOnes.length)return'Aucun changement significatif depuis la dernière mise à jour.';
+    changedOnes.sort((x,y)=>{
+      const sx=Math.abs((x.ch.deltaConfidence||0)+(x.ch.deltaScore||0)*0.5);
+      const sy=Math.abs((y.ch.deltaConfidence||0)+(y.ch.deltaScore||0)*0.5);
+      return sy-sx;
+    });
+    const top=changedOnes[0];
+    const net=(top.ch.deltaConfidence||0)+(top.ch.deltaScore||0)*0.5;
+    return`${top.coin.sym} ${net>=0?verbs.up:verbs.down}.`;
+  },
+
+  // ── Synthèse globale : combine les 4 actifs selon leur rôle ──
+  globalSynthesis(state){
+    const w=this.weights(state);
+    const opportunity=this.globalOpportunity(state,w);
+    const risk=this.globalRisk(state,w);
+    const anomaly=this.xrpAnomaly(state);
+    const confidence=this.globalConfidence(state,w,anomaly.flag);
+    const index=this.decisionIndex(opportunity,confidence.score);
+    const stateInfo=this.classifyState(state,opportunity);
+    const changeText=this.globalChangeSummary(state);
+    const changes=C.coins.map(c=>state[c.id]?.copilot?.change).filter(Boolean);
+    const hasHistory=changes.some(c=>c.changed!==null);
+    const anyChanged=changes.some(c=>c.changed===true);
+    const actions=this.todayActions(stateInfo.key,confidence.level,hasHistory,anyChanged);
+    return{state:stateInfo,opportunity,risk,confidence,index,weights:w,anomaly,changeText,actions,hasHistory};
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  CHART MANAGER
+// ═══════════════════════════════════════════════════
+const CHARTS = {
+  instances:{},
+  destroy(id){if(this.instances[id]){this.instances[id].destroy();delete this.instances[id]}},
+  create(canvasId,config){
+    if(typeof Chart==='undefined'){console.warn('Chart.js indisponible (CDN bloqué/hors-ligne) — graphique ignoré :',canvasId);return}
+    this.destroy(canvasId);
+    const el=document.getElementById(canvasId);
+    if(!el)return;
+    try{this.instances[canvasId]=new Chart(el,config)}
+    catch(e){console.warn('Échec création du graphique',canvasId,e)}
+  },
+
+  // Lit les CSS vars au moment de la création → s'adapte automatiquement au thème courant
+  _colors(){
+    const s=getComputedStyle(document.documentElement);
+    const v=n=>s.getPropertyValue(n).trim();
+    return{
+      grid:  v('--chart-grid'),
+      ttBg:  v('--chart-tooltip-bg'),
+      ttBdr: v('--chart-border'),
+      title: v('--tp'),
+      body:  v('--ts'),
+      tick:  v('--ts'),
+    };
+  },
+
+  priceChart(canvasId,labels,prices,color,period){
+    const sl=prices.slice(-period),ll=labels.slice(-period);
+    const cc=this._colors();
+    this.create(canvasId,{
+      type:'line',
+      data:{labels:ll,datasets:[{data:sl,borderColor:color,borderWidth:1.5,fill:true,
+        backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,color+'33');g.addColorStop(1,color+'00');return g},
+        tension:.35,pointRadius:0,pointHoverRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{backgroundColor:cc.ttBg,borderColor:cc.ttBdr,borderWidth:1,titleColor:cc.title,bodyColor:cc.body,padding:10,callbacks:{label:c=>' '+FMT.price(c.raw)}}},
+        scales:{x:{display:false},y:{display:true,position:'right',grid:{color:cc.grid},ticks:{color:cc.tick,font:{family:"'JetBrains Mono'",size:10},callback:v=>FMT.price(v)}}}}
+    });
+  },
+
+  donut(canvasId,bear,neu,bull){
+    const cc=this._colors();
+    this.create(canvasId,{
+      type:'doughnut',
+      data:{labels:['Haussier','Neutre','Baissier'],
+        datasets:[{data:[bull,neu,bear],backgroundColor:['#10B981','#F59E0B','#F43F5E'],borderWidth:0,hoverOffset:5}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'70%',
+        plugins:{legend:{display:false},tooltip:{backgroundColor:cc.ttBg,borderColor:cc.ttBdr,borderWidth:1,titleColor:cc.title,bodyColor:cc.body,padding:8,callbacks:{label:c=>' '+c.label+' : '+c.raw+'%'}}}}
+    });
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  RENDERER
+// ═══════════════════════════════════════════════════
+const R = {
+  // ── helpers ──
+  scoreColor(s){if(s<=35)return'var(--bear)';if(s<=55)return'var(--warn)';if(s<=75)return'#60A5FA';return'var(--bull)'},
+  rsiColor(v){if(!v)return'var(--ts)';if(v<30)return'var(--bull)';if(v>70)return'var(--bear)';return'var(--warn)'},
+  fmtEma(ema,price){if(!ema)return{txt:'N/A',cls:''};const d=(price-ema)/ema*100;return{txt:FMT.price(ema),note:(d>=0?'+':'')+d.toFixed(1)+'%',cls:d>=0?'pos':'neg'}},
+  regimeColor(t){if(t==='bullish')return'var(--bull)';if(t==='bearish')return'var(--bear)';return'var(--warn)'},
+  levelStatus(type){if(type==='broken')return'<span class="lv-status broken">Cassé ↓</span>';if(type==='tested')return'<span class="lv-status tested">Testé ↯</span>';return'<span class="lv-status">Intact</span>'},
+
+  // ── TICKER STRIP ──
+  ticker(state){
+    const el=document.getElementById('ticker-strip');if(!el)return;
+    el.innerHTML=C.coins.map(c=>{
+      const d=state[c.id];if(!d)return'';
+      const chg=d.change24h;
+      return`<div class="tick-item"><span class="tick-sym" style="color:${c.color}">${c.short} ${c.sym}</span><span class="tick-p">${FMT.price(d.price)}</span><span class="tick-c ${chg>=0?'pos':'neg'}">${FMT.pct(chg)}</span></div>`;
+    }).join('');
+  },
+
+  // ── OVERVIEW TAB — NIVEAU 1 (vue marché) + NIVEAU 2 (cartes par actif) ──
+  overview(state,dominance,global){
+    const el=document.getElementById('tab-overview');
+    if(!global){el.innerHTML='<div class="card" style="margin:20px 0;text-align:center;color:var(--ts)">Données insuffisantes pour une synthèse pour l\'instant.</div>';return}
+    const g=global;
+    const beginnerMode=MODE.current()==='beginner';
+
+    // ── NIVEAU 1 : compréhensible en 5 secondes ──
+    const curMode=MODE.current();
+    const modeBtns=`<div class="mode-wrap" role="group" aria-label="Niveau d'explication">
+      <button class="mode-btn${curMode==='beginner'?' active':''}" data-mode="beginner" onclick="MODE.set('beginner')" title="Résumé simple, sans jargon">Débutant</button>
+      <button class="mode-btn${curMode==='standard'?' active':''}" data-mode="standard" onclick="MODE.set('standard')" title="Résumé + explications">Standard</button>
+      <button class="mode-btn${curMode==='expert'?' active':''}" data-mode="expert" onclick="MODE.set('expert')" title="Tous les détails et calculs">Expert</button>
+    </div>`;
+    const oppColor=this.scoreColor(g.opportunity);
+    const riskColor=g.risk.label==='Faible'?'var(--bull)':g.risk.label==='Élevé'?'var(--bear)':'var(--warn)';
+    const actionItems=g.actions.bullets.map(b=>`<div class="mv-action-item"><span class="mv-action-arrow">→</span><span>${b}</span></div>`).join('');
+    const inactionBadge=g.actions.isInaction?'<div class="mv-inaction-badge">⏸ Ne rien faire pour l\'instant</div>':'';
+    const whyTxt=g.actions.why?`<div class="mv-why"><b>Pourquoi :</b> ${g.actions.why}</div>`:'';
+    const anomalyLine=g.anomaly.flag?`<div style="font-size:11px;color:var(--warn);margin-top:8px">⚠️ ${g.anomaly.text}</div>`:`<div style="font-size:11px;color:var(--ts);margin-top:8px">${g.anomaly.text}</div>`;
+
+    const marketView=`
+      <div class="market-view">
+        <div class="mv-head">
+          <div class="mv-state-wrap">
+            <span class="mv-state-emoji">${g.state.emoji}</span>
+            <div><div class="mv-state-eyebrow">État du marché</div><div class="mv-state-name">${g.state.label}</div></div>
+          </div>
+          ${modeBtns}
+        </div>
+        <div style="text-align:center;padding:4px 0 18px">
+          <div class="score-human ${g.index.cls}" style="font-size:15px">${g.index.emoji} Indice de décision — <b>${g.index.txt}</b> <span class="num">${g.index.score}/100</span></div>
+          <div class="score-big ${g.index.cls}" style="font-size:42px">${g.index.score}</div>
+          <div class="score-gauge" style="max-width:240px"><div class="score-needle" style="left:${g.index.score}%"></div></div>
+          <div class="score-labels" style="max-width:240px"><span>0 — Ignorer</span><span>50</span><span>100 — Très favorable</span></div>
+          ${g.index.fragile?'<div style="font-size:11px;color:var(--warn);margin-top:8px">⚠️ Porté par une confiance faible — fragile, à confirmer avant d\'agir.</div>':''}
+          <div style="font-size:11px;color:var(--tm);margin-top:6px">= opportunité × confiance · le détail est juste en dessous</div>
+        </div>
+        <div class="mv-stats">
+          <div class="mv-stat"><div class="mv-stat-lbl">Opportunité</div><div class="mv-stat-val" style="color:${oppColor}">${g.opportunity}/100</div></div>
+          <div class="mv-stat"><div class="mv-stat-lbl">Confiance</div><div class="mv-stat-val"><span class="conf-pill conf-${g.confidence.level}">${g.confidence.emoji} ${g.confidence.score}%</span></div><div class="mv-stat-sub">${g.confidence.label}</div></div>
+          <div class="mv-stat"><div class="mv-stat-lbl">Risque</div><div class="mv-stat-val" style="color:${riskColor}">${g.risk.emoji} ${g.risk.label}</div></div>
+        </div>
+        <div class="mv-grid-bottom">
+          <div class="mv-block">
+            <div class="mv-block-title">Aujourd'hui</div>
+            ${inactionBadge}
+            ${actionItems}
+            ${whyTxt}
+          </div>
+          <div class="mv-block">
+            <div class="mv-block-title">Changement depuis hier</div>
+            <div class="mv-change-text">${g.changeText}</div>
+            ${anomalyLine}
+          </div>
+        </div>
+      </div>`;
+
+    // ── NIVEAU 2 : compréhensible en 30 secondes — 4 cartes ──
+    const cards=C.coins.map(c=>{
+      const d=state[c.id];if(!d||!d.copilot)return'';
+      const a=d.analysis,cp=d.copilot,chg=d.change24h;
+      const why=beginnerMode
+        ?`<div class="cop-row"><span class="cop-row-ic">💬</span><span>${cp.proCon.conclusion}</span></div>`
+        :`<div class="cop-row"><span class="cop-row-ic" style="color:var(--bull)">✓</span><span>${cp.proCon.positives[0]}</span></div>
+          <div class="cop-row"><span class="cop-row-ic" style="color:var(--bear)">✗</span><span>${cp.proCon.negatives[0]}</span></div>`;
+      const invalid=cp.invalidation[0]?`<div class="cop-row"><span class="cop-row-ic">🛑</span><span><b>Invalide si :</b> ${cp.invalidation[0]}</span></div>`:'';
+      const changeTxt=beginnerMode
+        ?(cp.change.changed===false?'Pas de changement notable depuis la dernière fois.':cp.change.changed===true?'Le contexte a évolué depuis la dernière mise à jour.':'Première analyse — rien à comparer encore.')
+        :cp.change.text;
+      const actionCode=a.action,chipColors={buy:['var(--bull-bg)','var(--bull)'],dca:['var(--warn-bg)','var(--warn)'],avoid:['var(--bear-bg)','var(--bear)'],wait:['var(--s3)','var(--ts)']};
+      const[chipBg,chipFg]=chipColors[actionCode]||chipColors.wait;
+      return`<div class="cop-card ${c.cls}" tabindex="0" role="button" aria-label="Voir le détail ${c.name}" onclick="APP.switchTab('${c.cls}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();APP.switchTab('${c.cls}')}">
+        <div class="cop-top">
+          <div><div class="cop-sym" style="color:${c.color}">${c.sym}/${FX.currency}</div><div class="cop-role">${c.role}</div></div>
+          <div class="cop-price-wrap"><div class="cop-price">${FMT.price(d.price)}</div><div class="cop-chg ${chg>=0?'pos':'neg'}">${FMT.pct(chg)}</div></div>
+        </div>
+        <div class="cop-summary">${TEXT.situation(c.sym,a,chg)}</div>
+        <div class="cop-rows">
+          ${why}
+          ${invalid}
+          <div class="cop-row"><span class="cop-row-ic">🔄</span><span><b>Changé :</b> ${changeTxt}</span></div>
+        </div>
+        <div class="cop-footer">
+          <span class="cop-chip" style="background:${chipBg};color:${chipFg}">${TEXT.actionLabel(actionCode)}</span>
+          <span class="conf-pill conf-${cp.confidence.level}">${cp.confidence.emoji} ${cp.confidence.label}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    // ── NIVEAU 3 (au niveau vue d'ensemble) : contexte marché + tableau, replié ──
+    const ctxCards=`
+      <div class="card card-sm"><div class="ind-label">Dominance BTC</div><div class="ind-val num" style="color:var(--btc)">${dominance?dominance.toFixed(1)+'%':'N/A'}</div></div>
+      <div class="card card-sm"><div class="ind-label">Régime BTC</div><div class="ind-val" style="color:${this.regimeColor(state.bitcoin?.analysis?.regime?.trend||'neutral')};font-size:13px">${state.bitcoin?.analysis?.regime?.emoji||'—'} ${state.bitcoin?.analysis?.regime?.label||'N/A'}</div></div>
+      <div class="card card-sm"><div class="ind-label">Meilleur score</div><div class="ind-val num" style="color:var(--bull)">${(()=>{const b=C.coins.map(c=>({sym:c.sym,s:state[c.id]?.analysis?.score||0})).sort((a,b)=>b.s-a.s)[0];return b?b.sym+' '+b.s+'/100':'N/A'})()}</div></div>
+      <div class="card card-sm"><div class="ind-label">Pondération du jour</div><div class="ind-val" style="font-size:12px">${C.coins.map(c=>`${c.sym} ${Math.round(g.weights[c.id]||0)}%`).join(' · ')}</div></div>
+    `;
+    const scoreRows=C.coins.map(c=>{
+      const d=state[c.id];if(!d)return'';const a=d.analysis,idx=d.copilot?.index;
+      const sc=this.scoreColor(a.score);
+      const si=TEXT.scoreInterp(a.score);
+      return`<tr><td><span style="color:${c.color};font-weight:600">${c.sym}</span></td>
+        <td class="mono">${FMT.price(d.price)}</td>
+        <td class="mono ${d.change24h>=0?'pos':'neg'}">${FMT.pct(d.change24h)}</td>
+        <td><span class="num" style="color:${this.rsiColor(a.rsi)}">${FMT.num(a.rsi,1)}</span></td>
+        <td>${si.emoji} <span class="num" style="color:${sc}">${a.score}</span><span style="color:var(--ts)">/100</span></td>
+        <td>${idx?`<span class="${idx.cls}">${idx.emoji} ${idx.score}${idx.fragile?' ⚠️':''}</span>`:'—'}</td>
+        <td>${a.signal.emoji} ${a.signal.label}</td>
+        <td><span class="${this.actionCls2(a.action)}">${TEXT.actionLabel(a.action)}</span></td></tr>`;
+    }).join('');
+
+    el.innerHTML=`
+      <div class="section">${marketView}</div>
+      <div class="section"><div class="cop-grid">${cards}</div></div>
+      <div class="section">
+        <details class="evidence" ${MODE.current()==='expert'?'open':''}>
+          <summary>Contexte marché &amp; tableau de synthèse détaillé</summary>
+          <div class="evidence-body">
+            <div class="grid-4" style="margin-bottom:16px">${ctxCards}</div>
+            <div class="card" style="padding:0;overflow:hidden">
+              <table style="width:100%;border-collapse:collapse">
+                <thead><tr style="background:var(--s2)">
+                  <th style="padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">Actif</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">Prix</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">24h</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">RSI</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">Score</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">Indice</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">Signal</th>
+                  <th style="padding:9px 8px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);text-align:left">Lecture</th>
+                </tr></thead>
+                <tbody>${scoreRows}</tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>`;
+  },
+
+  // ── ASSET TAB ──
+  assetTab(coin,d,state){
+    const a=d.analysis,prices=a.prices,cp=d.copilot;
+    const e20=this.fmtEma(a.ema20,d.price),e50=this.fmtEma(a.ema50,d.price);
+    const e100=this.fmtEma(a.ema100,d.price),e200=this.fmtEma(a.ema200,d.price);
+    const athDist=a.ath?((a.ath-d.price)/a.ath*100).toFixed(1)+'%':'N/A';
+    const si=TEXT.scoreInterp(a.score);
+    const ac=TEXT.actionClass(a.action);
+    const hor=TEXT.horizons(a.action);
+
+    // Signals for regime
+    const sigItems=[
+      {ic:a.ema20&&d.price>a.ema20?'🟢':'🔴',txt:`Prix vs EMA20 : ${a.ema20&&d.price>a.ema20?'au-dessus':'en-dessous'} (${FMT.price(a.ema20)})`},
+      {ic:a.ema50&&d.price>a.ema50?'🟢':'🔴',txt:`Prix vs EMA50 : ${a.ema50&&d.price>a.ema50?'au-dessus':'en-dessous'} (${FMT.price(a.ema50)})`},
+      {ic:a.ema200&&d.price>a.ema200?'🟢':'🔴',txt:`Prix vs EMA200 : ${a.ema200&&d.price>a.ema200?'au-dessus':'en-dessous'}`},
+      {ic:a.macd?.bullish?'🟢':'🔴',txt:`MACD : ${a.macd?.bullish?'positif (haussier)':'négatif (baissier)'}`+(a.macd?.crossUp?' — crossover haussier récent':a.macd?.crossDown?' — crossover baissier récent':'')},
+      {ic:a.rsi&&a.rsi>50?'🟢':'🔴',txt:`RSI ${FMT.num(a.rsi,1)} : ${a.rsi&&a.rsi<30?'survente extrême':a.rsi&&a.rsi>70?'surachat':a.rsi&&a.rsi>50?'momentum positif':'momentum négatif'}`},
+      {ic:a.structure==='bullish'?'🟢':a.structure==='bearish'?'🔴':'🟡',txt:`Structure de marché : ${a.structure==='bullish'?'HH/HL haussière':a.structure==='bearish'?'LH/LL baissière':'neutre / indéterminée'}`}
+    ];
+    if(a.regime.reasons.length)a.regime.reasons.forEach(r=>sigItems.push({ic:'ℹ️',txt:r}));
+
+    // Levels HTML
+    const resLevels=a.resistances.map(r=>`<div class="level-row"><span class="lv-pill lv-res">Résistance</span><span class="lv-price">${FMT.price(r)}</span><span class="lv-note">Zone de résistance identifiée</span>${this.levelStatus('')}</div>`).join('');
+    const curLevel=`<div class="level-row" style="background:rgba(245,158,11,.05)"><span class="lv-pill lv-cur">Prix actuel</span><span class="lv-price" style="color:var(--warn)">${FMT.price(d.price)}</span><span class="lv-note">−${athDist} depuis ATH</span></div>`;
+    const supLevels=a.supports.map((s,i)=>`<div class="level-row"><span class="lv-pill lv-sup">Support</span><span class="lv-price">${FMT.price(s)}</span><span class="lv-note">${i===0?'Support majeur immédiat':'Support secondaire'}</span>${this.levelStatus(i===0&&d.change24h<-2?'tested':'')}</div>`).join('');
+
+    // Opinion block
+    let opBlock='';
+    if(coin.hasOpinion){
+      const opFn=OPINIONS[coin.cls];
+      if(opFn){
+        const op=opFn(a,d.price);
+        opBlock=`
+          <div class="section">
+            <div class="sh"><span class="sh-num">10</span><span class="sh-title">Opinion qualitative</span></div>
+            <div class="opinion-card">
+              <div class="op-verdict-row">
+                <span class="op-verdict-badge ${op.verdict.cls}">${op.verdict.v}</span>
+                ${op.pctFromAth?`<span class="tag">−${op.pctFromAth}% depuis ATH</span>`:''}
+              </div>
+              <div class="op-strengths">
+                <div class="op-heading">✅ Points forts</div>
+                ${op.str.map(s=>`<div class="op-point"><span class="op-point-ic">✓</span><span>${s}</span></div>`).join('')}
+              </div>
+              <div class="op-weaknesses">
+                <div class="op-heading">⚠️ Points faibles</div>
+                ${op.wk.map(w=>`<div class="op-point"><span class="op-point-ic" style="color:var(--bear)">✗</span><span>${w}</span></div>`).join('')}
+              </div>
+              <div class="accumulate-box">
+                <div class="acc-q">« Est-ce une crypto que j'aurais envie d'accumuler aujourd'hui ? »</div>
+                <div class="acc-a ${op.acc==='Non'?'neg':op.acc.startsWith('Oui')?'pos':'neu'}">${op.acc}</div>
+                <div style="font-size:12px;color:var(--ts);margin-top:4px">${op.accExpl}</div>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    const el=document.getElementById('tab-'+coin.cls);
+    el.innerHTML=`
+      <!-- HEADER -->
+      <div class="asset-dh">
+        <div class="adh-logo" style="background:${coin.color}22;color:${coin.color}">${coin.short}</div>
+        <div>
+          <div style="font-size:12px;color:var(--ts);margin-bottom:3px">${coin.name} / ${FX.currency}</div>
+          <div class="adh-price">${FMT.price(d.price)}</div>
+          <div class="adh-changes">
+            <span class="${d.change24h>=0?'pos':'neg'}">${FMT.pct(d.change24h)}</span>
+            <span>· 7j : <span class="${(d.change7d||0)>=0?'pos':'neg'}">${FMT.pct(d.change7d)}</span></span>
+            <span>· Vol : ${FMT.vol(d.volume)}</span>
+          </div>
+          ${FX.isEur&&FX.minutesAgo()!==null?`<div class="adh-fx-note">Source USD · Taux EUR mis à jour il y a ${FX.minutesAgo()} min</div>`:''}
+          <div class="role-tag">Rôle : <b>${coin.role}</b> — « ${coin.roleQ} »</div>
+        </div>
+        <div class="adh-meta">
+          <div class="adh-regime" title="${a.regime.label}">${a.regime.emoji}</div>
+          <div class="adh-regime-txt">${a.regime.label}</div>
+          <div style="font-size:11px;color:var(--ts);margin-top:4px">Confiance régime : <span class="num">${a.regime.conf}%</span></div>
+        </div>
+      </div>
+
+      <!-- CHART -->
+      <div class="section">
+        <div class="chart-wrap" id="${coin.cls}-chart-wrap">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="chart-controls">
+              <button class="cc-btn active" id="${coin.cls}-p7" onclick="R.switchPeriod('${coin.cls}',7)">7J</button>
+              <button class="cc-btn" id="${coin.cls}-p30" onclick="R.switchPeriod('${coin.cls}',30)">30J</button>
+              <button class="cc-btn" id="${coin.cls}-p90" onclick="R.switchPeriod('${coin.cls}',90)">90J</button>
+            </div>
+            <span style="font-size:11px;color:var(--ts)">${coin.sym}/${FX.currency}</span>
+          </div>
+          <canvas class="chart-canvas" id="chart-${coin.cls}"></canvas>
+        </div>
+      </div>
+
+      <!-- QUE FAIRE AUJOURD'HUI ? (décision visible immédiatement) -->
+      <div class="section">
+        <div class="sh"><span class="sh-num">01</span><span class="sh-title">Que faire aujourd'hui ?</span></div>
+        <div class="card">
+          <div class="simple-card"><div class="simple-q">Que se passe-t-il aujourd'hui ?</div><div class="simple-a">${TEXT.situation(coin.sym,a,d.change24h)}</div></div>
+          <div class="simple-card"><div class="simple-q">Pourquoi ça monte ou baisse ?</div><div class="simple-a">${TEXT.why(a,d.change24h,d.change7d,d.price)}</div></div>
+          <div class="simple-card"><div class="simple-q">Est-ce un bon moment pour investir ?</div><div class="simple-a">${TEXT.timing(a)}</div></div>
+          <div class="action-banner ${ac}">
+            <div class="ab-pre">AUJOURD'HUI</div>
+            <div class="ab-action">${TEXT.actionLabel(a.action)}</div>
+            <div class="ab-expl">${cp.index.emoji} Indice de décision : ${cp.index.score}/100 — ${cp.index.txt}${cp.index.fragile?' · ⚠️ fragile':''}</div>
+          </div>
+          <div class="risk-horizon">
+            <div class="rh-item"><span class="rh-label">Risque :</span><span class="rh-val">${TEXT.riskLabel(a.risk)}</span></div>
+            <div class="rh-item"><span class="rh-label">CT :</span><span class="rh-val">${hor.ct}</span></div>
+            <div class="rh-item"><span class="rh-label">MT :</span><span class="rh-val">${hor.mt}</span></div>
+            <div class="rh-item"><span class="rh-label">LT :</span><span class="rh-val">${hor.lt}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIANCE (obligatoire) -->
+      <div class="section">
+        <div class="sh"><span class="sh-num">02</span><span class="sh-title">Confiance du copilote</span></div>
+        <div class="engine-card">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px">
+            <span class="conf-pill conf-${cp.confidence.level}" style="font-size:13px;padding:7px 14px">${cp.confidence.emoji} ${cp.confidence.score}% — Confiance ${cp.confidence.label}</span>
+            <span style="font-size:12px;color:var(--ts);flex:1;min-width:200px">Confiance ≠ opportunité : un score d'attractivité élevé avec une confiance faible invite à attendre une confirmation plutôt qu'à agir.</span>
+          </div>
+          <div class="conf-breakdown exp-only">
+            <div class="conf-factor-row"><span>Accord entre indicateurs</span><b>${cp.confidence.factors.agreement}%</b></div>
+            <div class="conf-factor-row"><span>Fraîcheur des données</span><b>${cp.confidence.factors.freshness}%</b></div>
+            <div class="conf-factor-row"><span>Cohérence multi-timeframe (7j / 30j / 90j)</span><b>${cp.confidence.factors.multiTF}%</b></div>
+            <div class="conf-factor-row"><span>Absence de contradictions (${cp.confidence.factors.flagsCount} détectée${cp.confidence.factors.flagsCount===1?'':'s'})</span><b>${cp.confidence.factors.contradictions}%</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOTEUR CONTRADICTOIRE (obligatoire) -->
+      <div class="section">
+        <div class="sh"><span class="sh-num">03</span><span class="sh-title">Moteur contradictoire</span></div>
+        <div class="engine-card">
+          <div class="contra-grid">
+            <div>
+              <div class="contra-col-title pos">Positif</div>
+              ${cp.proCon.positives.map(p=>`<div class="contra-item"><span style="color:var(--bull);flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+            </div>
+            <div>
+              <div class="contra-col-title neg">Négatif</div>
+              ${cp.proCon.negatives.map(n=>`<div class="contra-item"><span style="color:var(--bear);flex-shrink:0">✗</span><span>${n}</span></div>`).join('')}
+            </div>
+          </div>
+          <div class="contra-conclusion">💬 ${cp.proCon.conclusion}</div>
+        </div>
+      </div>
+
+      <!-- MOTEUR D'INVALIDATION (obligatoire) -->
+      <div class="section">
+        <div class="sh"><span class="sh-num">04</span><span class="sh-title">Moteur d'invalidation</span></div>
+        <div class="engine-card">
+          <div class="engine-q">« Qu'est-ce qui ferait changer d'avis ? »</div>
+          <div class="invalid-list">
+            ${cp.invalidation.map(i=>`<div class="invalid-item"><span class="invalid-ic">⚑</span><span>${i}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- MOTEUR DE CHANGEMENT (obligatoire) -->
+      <div class="section">
+        <div class="sh"><span class="sh-num">05</span><span class="sh-title">Qu'est-ce qui a changé ?</span></div>
+        <div class="engine-card"><div class="change-text">${cp.change.text}</div></div>
+      </div>
+
+      <!-- NIVEAU 3 — PREUVES (repliable) -->
+      <div class="section">
+        <details class="evidence" ${MODE.current()==='expert'?'open':''}>
+        <summary>Voir les preuves &amp; calculs détaillés</summary>
+        <div class="evidence-body">
+
+        <!-- SCORE -->
+        <div class="section">
+          <div class="sh"><span class="sh-num">06</span><span class="sh-title">Score d'attractivité</span></div>
+          <div class="card">
+            <div class="score-big-wrap">
+              <div class="score-human ${si.cls}">${si.emoji} ${si.txt} <span class="num">${a.score}/100</span></div>
+              <div class="score-big" style="color:${this.scoreColor(a.score)}">${a.score}</div>
+              <div class="score-gauge"><div class="score-needle" style="left:${a.score}%"></div></div>
+              <div class="score-labels"><span>0 — Éviter</span><span>50</span><span>100 — Optimal</span></div>
+            </div>
+            <div style="background:var(--s2);border-radius:var(--r);padding:12px;margin-top:12px;font-size:12px;color:var(--ts);line-height:1.6">
+              Score calculé sur : RSI ${FMT.num(a.rsi,1)}, position vs EMAs (${a.regime.bull} bull / ${a.regime.bear} bear), MACD ${a.macd?.bullish?'positif':'négatif'}, structure ${a.structure}, distance ATH −${athDist}.
+            </div>
+            <div class="score-disclaimer">⚠️ Ce score est un indicateur technique, pas une prédiction. Il ne constitue pas un conseil financier et ne garantit aucune performance future.</div>
+          </div>
+        </div>
+
+        <!-- RÉGIME -->
+        <div class="section">
+          <div class="sh"><span class="sh-num">07</span><span class="sh-title">Détection de régime</span></div>
+          <div class="card">
+            <div class="interp-line">💬 ${TEXT.regimeExplain(a.regime,coin.sym)}</div>
+            <div class="regime-verdict">
+              <div class="rv-emoji">${a.regime.emoji}</div>
+              <div><div class="rv-main" style="color:${this.regimeColor(a.regime.trend)}">${a.regime.label}</div>
+                <div class="rv-sub">${a.regime.bull} signaux haussiers · ${a.regime.bear} signaux baissiers</div>
+              </div>
+              <div class="rv-conf ml-auto">
+                <div class="rv-conf-val" style="color:${this.regimeColor(a.regime.trend)}">${a.regime.conf}%</div>
+                <div class="rv-conf-lbl">Confiance</div>
+              </div>
+            </div>
+            <div class="signal-grid">${sigItems.map(s=>`<div class="sig-item"><span class="sig-ic">${s.ic}</span><span>${s.txt}</span></div>`).join('')}</div>
+          </div>
+        </div>
+
+        <!-- INDICATEURS -->
+        <div class="section">
+          <div class="sh"><span class="sh-num">08</span><span class="sh-title">Indicateurs techniques</span></div>
+          <div class="interp-line">💬 ${TEXT.indicatorsExplain(a)}</div>
+          <div class="grid-4" style="margin-bottom:12px">
+            <div class="ind-card">
+              <div class="ind-label">RSI (14)</div>
+              <div class="ind-val num" style="color:${this.rsiColor(a.rsi)}">${FMT.num(a.rsi,1)}</div>
+              <div class="rsi-bar-wrap"><div class="rsi-cursor" style="left:${a.rsi||50}%"></div></div>
+              <div class="ind-note">${a.rsi<30?'Survente extrême':a.rsi<40?'Survente':a.rsi>70?'Surachat':a.rsi>60?'Légèrement suracheté':'Zone neutre'}</div>
+            </div>
+            <div class="ind-card">
+              <div class="ind-label">MACD</div>
+              <div class="ind-val num" style="color:${a.macd?.bullish?'var(--bull)':'var(--bear)'}">${a.macd?FMT.num(a.macd.histogram,4):'N/A'}</div>
+              <div class="ind-note">${a.macd?.crossUp?'🟢 Crossover haussier !':a.macd?.crossDown?'🔴 Crossover baissier !':a.macd?.bullish?'Haussier (MACD > Signal)':'Baissier (MACD < Signal)'}</div>
+            </div>
+            <div class="ind-card">
+              <div class="ind-label">Structure marché</div>
+              <div class="ind-val" style="color:${this.regimeColor(a.structure)};font-size:16px">${a.structure==='bullish'?'HH / HL':a.structure==='bearish'?'LH / LL':'Mixte'}</div>
+              <div class="ind-note">${a.structure==='bullish'?'Haussière':a.structure==='bearish'?'Baissière':'Indéterminée'}</div>
+            </div>
+            <div class="ind-card">
+              <div class="ind-label">Distance ATH</div>
+              <div class="ind-val num neg">−${athDist}</div>
+              <div class="ind-note">ATH : ${FMT.price(a.ath)}</div>
+            </div>
+          </div>
+          <div class="grid-4 exp-only" style="margin-bottom:12px">
+            <div class="ind-card">
+              <div class="ind-label">Volatilité (14j)</div>
+              <div class="ind-val num" style="color:var(--tp)">${a.volatility14!=null?a.volatility14.toFixed(1)+'%':'N/A'}</div>
+              <div class="ind-note">${a.volatility14==null?'Donnée insuffisante':a.volatility14>4?'Élevée — recherche de rendement active':a.volatility14>2?'Modérée':'Faible'}</div>
+            </div>
+            <div class="ind-card">
+              <div class="ind-label">Tendance du volume (7j)</div>
+              <div class="ind-val num" style="color:${a.volTrend?.rising?'var(--bull)':a.volTrend?.falling?'var(--bear)':'var(--tp)'}">${a.volTrend?(a.volTrend.changePct>=0?'+':'')+a.volTrend.changePct.toFixed(1)+'%':'N/A'}</div>
+              <div class="ind-note">${a.volTrend?(a.volTrend.rising?'En hausse':a.volTrend.falling?'En baisse':'Stable'):'Donnée insuffisante'}</div>
+            </div>
+            <div class="ind-card">
+              <div class="ind-label">Accumulation (heuristique)</div>
+              <div class="ind-val ${a.accumulation.cls}" style="font-size:14px">${a.accumulation.label}</div>
+              <div class="ind-note">Pas de MVRV réel disponible (source on-chain non connectée) — estimation prix/volume uniquement.</div>
+            </div>
+            ${coin.cls==='btc'?(()=>{const sp=COPILOT.sentimentProxy(a);return sp?`<div class="ind-card"><div class="ind-label">Proxy de sentiment</div><div class="ind-val num" style="color:var(--tp)">${sp.score}/100</div><div class="ind-note">${sp.label} — estimation interne (RSI + régime), ≠ indice Fear &amp; Greed officiel</div></div>`:'';})():''}
+          </div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <table class="ema-table" style="width:100%">
+              <thead><tr><th>EMA</th><th>Valeur</th><th>Distance</th><th>Signal</th></tr></thead>
+              <tbody>
+                ${[['20',e20],['50',e50],['100',e100],['200',e200]].map(([per,e])=>`
+                  <tr class="${e.cls==='pos'?'ema-row-bull':'ema-row-bear'}">
+                    <td><span class="tag">EMA ${per}</span></td>
+                    <td class="mono">${e.txt}</td>
+                    <td class="mono ${e.cls||''}">${e.note||'N/A'}</td>
+                    <td><span style="color:${e.cls==='pos'?'var(--bull)':'var(--bear)'}">${e.cls==='pos'?'▲ Au-dessus':'▼ En-dessous'}</span></td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- NIVEAUX -->
+        <div class="section">
+          <div class="sh"><span class="sh-num">09</span><span class="sh-title">Niveaux clés</span></div>
+          <div class="card"><div class="interp-line">💬 ${TEXT.levelsExplain(a,d.price)}</div>${resLevels}${curLevel}${supLevels}</div>
+        </div>
+
+        ${opBlock}
+
+        <!-- SCÉNARIOS -->
+        <div class="section">
+          <div class="sh"><span class="sh-num">11</span><span class="sh-title">Scénarios probabilistes</span></div>
+          <div class="card">
+            <div class="interp-line">💬 ${TEXT.scenariosExplain(a.scenarios)}</div>
+            <div class="scen-layout">
+              <div>
+                <div class="scen-chart-wrap"><canvas id="scen-${coin.cls}" role="img" aria-label="Probabilités des scénarios"></canvas></div>
+                <div class="scen-legend">
+                  <div class="scen-leg"><span class="leg-dot" style="background:var(--bull)"></span>Haussier ${a.scenarios.bull}%</div>
+                  <div class="scen-leg"><span class="leg-dot" style="background:var(--warn)"></span>Neutre ${a.scenarios.neu}%</div>
+                  <div class="scen-leg"><span class="leg-dot" style="background:var(--bear)"></span>Baissier ${a.scenarios.bear}%</div>
+                </div>
+              </div>
+              <div class="scen-items">
+                <div class="scen-card bear">
+                  <div class="scen-top"><span class="scen-name neg">↓ Baissier</span><span class="scen-pct neg">${a.scenarios.bear}%</span></div>
+                  <div class="scen-bar-bg"><div class="scen-bar-f" style="width:${a.scenarios.bear}%;background:var(--bear)"></div></div>
+                  <div class="scen-desc">Cassure des supports majeurs, poursuite de la baisse. Outflows ETF persistants, macro hawkish, absence de catalyseur.</div>
+                  <div class="scen-triggers"><strong>Déclencheur :</strong> Clôture sous ${FMT.price(a.supports[0]||d.price*0.9)}</div>
+                </div>
+                <div class="scen-card neu">
+                  <div class="scen-top"><span class="scen-name neu">→ Neutre</span><span class="scen-pct neu">${a.scenarios.neu}%</span></div>
+                  <div class="scen-bar-bg"><div class="scen-bar-f" style="width:${a.scenarios.neu}%;background:var(--warn)"></div></div>
+                  <div class="scen-desc">Consolidation en range. Ni breakout ni breakdown. Marché attentiste, volumes faibles.</div>
+                  <div class="scen-triggers"><strong>Invalidation :</strong> Breakout ${FMT.price(a.resistances[0]||d.price*1.1)} ou breakdown ${FMT.price(a.supports[0]||d.price*0.9)}</div>
+                </div>
+                <div class="scen-card bull">
+                  <div class="scen-top"><span class="scen-name pos">↑ Haussier</span><span class="scen-pct pos">${a.scenarios.bull}%</span></div>
+                  <div class="scen-bar-bg"><div class="scen-bar-f" style="width:${a.scenarios.bull}%;background:var(--bull)"></div></div>
+                  <div class="scen-desc">Retour des flux ETF, pivot Fed ou short squeeze. Reprise au-dessus des EMA clés.</div>
+                  <div class="scen-triggers"><strong>Déclencheur :</strong> Clôture hebdo au-dessus ${FMT.price(a.resistances[0]||d.price*1.08)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+        </details>
+      </div>
+    `;
+
+    // Init charts — double rAF : on attend 2 frames pour être certain que le
+    // canvas a été mis en page (dimensions réelles) avant d'initialiser
+    // Chart.js, plus fiable qu'un délai arbitraire (setTimeout 50ms).
+    const allPrices=a.prices.full;
+    const allDates=allPrices.map((_,i)=>{const d2=new Date();d2.setDate(d2.getDate()-(allPrices.length-1-i));return FMT.date(d2)});
+    APP._chartData[coin.cls]={prices:allPrices,dates:allDates,color:coin.color,period:7};
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      CHARTS.priceChart(`chart-${coin.cls}`,allDates,allPrices,coin.color,7);
+      CHARTS.donut(`scen-${coin.cls}`,a.scenarios.bear,a.scenarios.neu,a.scenarios.bull);
+    }));
+  },
+
+  switchPeriod(cls,p){
+    ['7','30','90'].forEach(n=>{
+      const b=document.getElementById(`${cls}-p${n}`);
+      if(b)b.classList.toggle('active',parseInt(n)===p);
+    });
+    const cd=APP._chartData[cls];if(!cd)return;
+    CHARTS.priceChart(`chart-${cls}`,cd.dates,cd.prices,cd.color,p);
+  },
+
+  actionCls(action){
+    if(action==='buy')return'sc-action pos';if(action==='avoid')return'sc-action neg';
+    if(action==='dca')return'sc-action neu';return'sc-action muted';
+  },
+  actionCls2(action){
+    if(action==='buy')return'pos fw6';if(action==='avoid')return'neg fw6';
+    if(action==='dca')return'neu fw6';return'muted';
+  },
+
+  // ── EXECUTIVE SUMMARY ──
+  execSummary(state,dominance){
+    const el=document.getElementById('tab-exec');if(!el)return;
+    const scores=C.coins.map(c=>({coin:c,d:state[c.id],s:state[c.id]?.analysis?.score||0}));
+    const best=scores.reduce((a,b)=>a.s>b.s?a:b);
+    const worst=scores.reduce((a,b)=>a.s<b.s?a:b);
+    const btcA=state.bitcoin?.analysis;
+    const globalTrend=btcA?.regime?.trend||'neutral';
+    const globalEmoji=btcA?.regime?.emoji||'🟡';
+
+    // Best action across all coins
+    const actions=scores.map(({coin,d})=>({sym:coin.sym,action:d?.analysis?.action||'wait'}));
+    const hasBuy=actions.some(a=>a.action==='buy');
+    const hasDca=actions.some(a=>a.action==='dca');
+    const globalAction=hasBuy?'buy':hasDca?'dca':globalTrend==='bearish'?'avoid':'wait';
+    const ac=TEXT.actionClass(globalAction);
+
+    const perRow=scores.map(({coin,d})=>{
+      if(!d)return'';const a=d.analysis;
+      const actionKind=TEXT.actionClass(a.action).replace('action-','');
+      const actionTxtCls={dca:'neu',buy:'pos',avoid:'neg'}[actionKind]||'muted';
+      return`<div class="exec-row">
+        <span class="exec-lbl"><span style="color:${coin.color};font-weight:600">${coin.sym}</span></span>
+        <span class="exec-val">${a.signal.emoji} ${a.signal.label} · Score ${a.score}/100 · <span class="${actionTxtCls}">${TEXT.actionLabel(a.action)}</span></span>
+      </div>`;
+    }).join('');
+
+    el.innerHTML=`
+      <div class="section">
+        <div class="sh"><span class="sh-num">10</span><span class="sh-title">Résumé exécutif</span></div>
+        <div class="exec-card">
+          <div class="exec-verdict">${globalEmoji} Marché ${globalTrend==='bullish'?'haussier':globalTrend==='bearish'?'baissier':'en transition'}</div>
+          <div class="exec-row"><span class="exec-lbl">Régime global</span><span class="exec-val">${btcA?.regime?.label||'N/A'}</span></div>
+          <div class="exec-row"><span class="exec-lbl">Actif le plus fort</span><span class="exec-val" style="color:${best.coin.color}">${best.coin.name} — Score ${best.s}/100</span></div>
+          <div class="exec-row"><span class="exec-lbl">Actif le plus faible</span><span class="exec-val" style="color:${worst.coin.color}">${worst.coin.name} — Score ${worst.s}/100</span></div>
+          <div class="exec-row"><span class="exec-lbl">Dominance BTC</span><span class="exec-val num" style="color:var(--btc)">${dominance?dominance.toFixed(1)+'%':'N/A'}</span></div>
+          ${perRow}
+          <div class="exec-action">
+            <div class="exec-action-label">SYNTHÈSE DU JOUR</div>
+            <div class="exec-action-val ${globalAction==='buy'?'pos':globalAction==='avoid'?'neg':globalAction==='dca'?'neu':'muted'}">${TEXT.actionLabel(globalAction)}</div>
+            <div class="exec-one">${TEXT.execOneLiner(state)}</div>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  // ── HISTORY TAB ──
+  historyTab(entries){
+    const el=document.getElementById('tab-history');if(!el)return;
+    if(!entries||!entries.length){el.innerHTML='<div class="card" style="margin:20px 0;text-align:center;color:var(--ts)">Aucun historique disponible. L\'historique se constitue au fil des sessions.</div>';return}
+    const sorted=[...entries].sort((a,b)=>b.ts-a.ts);
+    const rows=sorted.map(e=>{
+      const cs=Object.entries(e.coins||{}).map(([sym,d])=>`<td class="mono" style="color:var(--ts)">${FMT.price(d.price)}</td><td class="mono" style="color:${d.rsi<30?'var(--bull)':d.rsi>70?'var(--bear)':'var(--warn)'}">${d.rsi?d.rsi.toFixed(0):'—'}</td><td><span style="color:${d.score>65?'var(--bull)':d.score>40?'var(--warn)':'var(--bear)'}">${d.score||'—'}</span></td>`).join('');
+      return`<tr><td class="mono" style="color:var(--ts)">${e.date}</td>${cs}</tr>`;
+    }).join('');
+
+    el.innerHTML=`
+      <div class="section">
+        <div class="sh"><span class="sh-num">HIST</span><span class="sh-title">Historique quotidien</span><span class="sh-sub">${entries.length} jours enregistrés</span></div>
+        <div class="card" style="padding:0;overflow:auto">
+          <table class="hist-table">
+            <thead><tr><th>Date</th>${C.coins.map(c=>`<th colspan="3" style="color:${c.color}">${c.sym}</th>`).join('')}</tr>
+            <tr><th></th>${C.coins.map(()=>'<th>Prix</th><th>RSI</th><th>Score</th>').join('')}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+};
+
+// ═══════════════════════════════════════════════════
+//  APPLICATION CONTROLLER
+// ═══════════════════════════════════════════════════
+const APP = {
+  _state:{},_dominance:0,_global:null,_timer:null,_countdown:0,_histEntries:[],_currentTab:'overview',_chartData:{},_initialized:false,
+  _refreshing:false,_lastClickTs:0,_lastSyncTs:null,_lastSource:null,_dotState:'loading',
+
+  async init(){
+    if(this._initialized)return;
+    this._initialized=true;
+    THEME.init();                    // initialise le bouton (data-theme déjà appliqué par anti-flash)
+    MODE.init();                     // initialise les boutons de niveau pédagogique (data-mode déjà appliqué par anti-flash)
+    await FX.init();                 // charge taux + préférence devise (peut faire 1 fetch si EUR+cache périmé)
+    this._loadPersistedStatus();
+    this.initTabKeyboardNav();
+    this._histEntries=HISTORY.load();
+    R.historyTab(this._histEntries);
+    this.setStatus('loading','Chargement…');
+    try{
+      await this.fetchAndRender();
+    }catch(e){
+      // Échec dès le premier chargement : on tente d'afficher n'importe quel
+      // cache existant (même ancien) avant d'abandonner, pour garder le tableau
+      // de bord exploitable au lieu d'un écran d'erreur vide.
+      const cachedRaw=HISTORY.getCached(null);
+      if(cachedRaw){
+        try{
+          // On transmet l'horodatage réel du cache (potentiellement très
+          // ancien) pour que le score de CONFIANCE reflète honnêtement la
+          // fraîcheur réelle des données affichées.
+          await this.processData(cachedRaw.data,cachedRaw.ts);
+          this._lastSource=cachedRaw.data.source||'coingecko';
+          this.setStatus('error','Données temporairement indisponibles');
+          this.showSyncBanner();
+        }catch{this.showError(e);}
+      }else{
+        this.showError(e);
+      }
+    }
+    this.startRefreshTimer();
+  },
+
+  async fetchAndRender(){
+    const raw=await API.fetchAll();
+    await this.processData(raw);
+    this._lastSyncTs=Date.now();
+    this._lastSource=raw.source||'coingecko';
+    this._persistStatus();
+    this.setStatus('live',this._liveLabel());
+    this.hideSyncBanner();
+  },
+
+  _liveLabel(){
+    return this._lastSource==='coinpaprika'?'En direct (secours CoinPaprika)':'En direct (CoinGecko)';
+  },
+  _formatTime(ts){return ts?new Date(ts).toLocaleTimeString('fr-FR'):'—'},
+  _persistStatus(){try{localStorage.setItem(C.STATUS_KEY,JSON.stringify({ts:this._lastSyncTs,source:this._lastSource}))}catch{}},
+  _loadPersistedStatus(){
+    try{
+      const s=JSON.parse(localStorage.getItem(C.STATUS_KEY));
+      if(s){this._lastSyncTs=s.ts;this._lastSource=s.source}
+    }catch{}
+  },
+
+  async processData(raw,asOfTs=Date.now()){
+    const{markets,global:gData,histories}=raw;
+    this._dominance=gData?.data?.market_cap_percentage?.btc||0;
+    this._state={};
+    // "Hier" au sens du moteur de changement = dernière session enregistrée
+    // avant aujourd'hui. Lu AVANT l'écrasement par HISTORY.snapshot() plus bas.
+    const prevEntry=HISTORY.previous(this._histEntries);
+    const freshness=COPILOT.freshness(asOfTs,raw.source);
+    for(const coin of C.coins){
+      const mkt=markets.find(m=>m.id===coin.id);
+      const hist=histories[coin.id];
+      if(!mkt||!hist)continue;
+      const prices=hist.prices.map(p=>p[1]);
+      const analysis=SIGNALS.analyze(coin.id,prices,mkt.current_price,mkt,this._dominance,hist.total_volumes);
+      if(!analysis)continue;
+      const d={price:mkt.current_price,change24h:mkt.price_change_percentage_24h,change7d:mkt.price_change_percentage_7d_in_currency,change30d:mkt.price_change_percentage_30d_in_currency,volume:mkt.total_volume,marketCap:mkt.market_cap,ath:mkt.ath,sparkline:mkt.sparkline_in_7d?.price||[],analysis};
+      // Moteurs obligatoires du copilote (confiance, contradictoire,
+      // invalidation, changement) — calculés une fois ici, réutilisés
+      // partout (cartes Niveau 2, onglet détaillé, synthèse globale, historique).
+      d.copilot=COPILOT.analyzeCoin(coin,analysis,d,prevEntry,freshness);
+      this._state[coin.id]=d;
+    }
+    if(Object.keys(this._state).length===0){
+      throw new Error('Aucune donnée exploitable reçue.');
+    }
+    // Synthèse globale (Niveau 1) — pondération dynamique par rôle BTC/ETH/SOL/XRP
+    this._global=COPILOT.globalSynthesis(this._state);
+    this.render();
+    this._histEntries=HISTORY.snapshot(this._state);
+    R.historyTab(this._histEntries);
+  },
+
+  render(){
+    R.ticker(this._state);
+    R.overview(this._state,this._dominance,this._global);
+    C.coins.forEach(c=>{const d=this._state[c.id];if(d)R.assetTab(c,d,this._state)});
+    R.execSummary(this._state,this._dominance);
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('tab-'+this._currentTab).classList.add('active');
+  },
+
+  // Re-rendu sans appel API (bascule devise ou thème)
+  rerender(){
+    if(!Object.keys(this._state).length) return;
+    R.ticker(this._state);
+    R.overview(this._state,this._dominance,this._global);
+    C.coins.forEach(c=>{const d=this._state[c.id];if(d)R.assetTab(c,d,this._state)});
+    R.execSummary(this._state,this._dominance);
+    if(this._histEntries.length) R.historyTab(this._histEntries);
+    // Restaurer l'onglet courant
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    const p=document.getElementById('tab-'+this._currentTab);if(p)p.classList.add('active');
+  },
+
+  switchTab(id){
+    document.querySelectorAll('.tnav-btn').forEach(b=>{
+      const isActive=b.dataset.tab===id;
+      b.classList.toggle('active',isActive);
+      b.setAttribute('aria-selected',isActive?'true':'false');
+      b.tabIndex=isActive?0:-1;
+    });
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    const p=document.getElementById('tab-'+id);if(p)p.classList.add('active');
+    this._currentTab=id;
+    document.getElementById('content').scrollTop=0;
+  },
+
+  // Navigation clavier minimale sur les onglets : ←/→ déplace et active
+  // l'onglet adjacent, Home/End va au premier/dernier (pattern ARIA tabs).
+  initTabKeyboardNav(){
+    const nav=document.getElementById('tab-nav');
+    if(!nav)return;
+    nav.addEventListener('keydown',(e)=>{
+      if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
+      const tabs=[...nav.querySelectorAll('.tnav-btn')];
+      const curIdx=tabs.findIndex(b=>b.dataset.tab===this._currentTab);
+      let nextIdx=curIdx;
+      if(e.key==='ArrowRight')nextIdx=(curIdx+1)%tabs.length;
+      else if(e.key==='ArrowLeft')nextIdx=(curIdx-1+tabs.length)%tabs.length;
+      else if(e.key==='Home')nextIdx=0;
+      else if(e.key==='End')nextIdx=tabs.length-1;
+      e.preventDefault();
+      const next=tabs[nextIdx];
+      this.switchTab(next.dataset.tab);
+      next.focus();
+    });
+  },
+
+  startRefreshTimer(){
+    if(this._timer)clearInterval(this._timer);
+    this._countdown=C.REFRESH_MS/1000;
+    this._timer=setInterval(()=>{
+      this._countdown--;
+      const label=this._dotState==='error'
+        ?`Erreur — nouvelle tentative dans ${this._countdown}s`
+        :`Prochain rafraîchissement dans ${this._countdown}s`;
+      this.setStatus(null,label);
+      if(this._countdown<=0){this._countdown=C.REFRESH_MS/1000;this.refresh()}
+    },1000);
+  },
+
+  // Bouton MAJ : anti double-clic (debounce) + respecte le cache 60s minimum
+  // (la vérification de fraîcheur a lieu dans API.fetchAll, donc un clic répété
+  // sur des données encore fraîches ne déclenche aucun appel réseau).
+  async refresh(){
+    const now=Date.now();
+    if(this._refreshing)return;
+    if(now-this._lastClickTs<C.DEBOUNCE_MS)return;
+    this._lastClickTs=now;
+    this._refreshing=true;
+    const btn=document.getElementById('refresh-btn');
+    if(btn)btn.disabled=true;
+    this.setStatus('loading','Vérification…');
+    try{
+      await this.fetchAndRender();
+      this._countdown=C.REFRESH_MS/1000;
+    }catch(e){
+      this.handleSyncFailure(e);
+    }finally{
+      this._refreshing=false;
+      if(btn)btn.disabled=false;
+    }
+  },
+
+  handleSyncFailure(e){
+    console.error('Synchronisation échouée :',e);
+    const hasData=Object.keys(this._state).length>0;
+    if(hasData){
+      // Les anciennes données restent affichées telles quelles (aucun re-render
+      // destructeur) ; on signale juste l'indisponibilité de façon discrète.
+      this.setStatus('error','Données temporairement indisponibles');
+      this.showSyncBanner();
+    }else{
+      this.setStatus('error','Erreur');
+      this.showError(e);
+    }
+  },
+
+  showSyncBanner(){
+    const el=document.getElementById('sync-banner');if(!el)return;
+    const since=this._lastSyncTs?` Dernière mise à jour affichée (${this._formatTime(this._lastSyncTs)}).`:' Dernière mise à jour affichée.';
+    el.textContent='⚠ Données temporairement indisponibles.'+since;
+    el.classList.add('show');
+  },
+  hideSyncBanner(){
+    const el=document.getElementById('sync-banner');if(el)el.classList.remove('show');
+  },
+
+  setStatus(type,txt){
+    const dot=document.getElementById('status-dot'),t=document.getElementById('refresh-txt'),ls=document.getElementById('last-sync-txt');
+    if(type&&dot){dot.className='status-dot '+type;this._dotState=type;}
+    if(t&&txt!=null)t.textContent=txt;
+    if(ls)ls.textContent=this._lastSyncTs?('· Dernière synchro '+this._formatTime(this._lastSyncTs)):'';
+  },
+
+  showError(e){
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('error-screen').style.display='block';
+    document.getElementById('error-msg').textContent=`Données temporairement indisponibles. Dernière mise à jour affichée : aucune pour l'instant (premier chargement).\n\nUne nouvelle tentative automatique aura lieu dans ${C.REFRESH_MS/1000}s, ou cliquez sur ↻ MAJ pour réessayer maintenant.\n\nDétail technique : ${e.message}`;
+  }
+};
+
+// ── Bootstrap
+window.addEventListener('DOMContentLoaded',()=>APP.init());
+</script>
+</body>
+</html>
